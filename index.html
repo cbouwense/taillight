@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Style Injection</title>
+  <style>
+    * {
+      --salmon: #ffaaaa;
+    }
+  </style>
+</head>
+<body class="bg-00f_imp bg-0f0_imp m-0">
+  <h1 class="c-red">Heading</h1>
+  <div class="flex gap-1rem justifyStart c_justifyBetween uw_justifyBetween">
+    <div class="brad-4px p-6px bg-181818 c-fff">flex</div>
+    <div class="brad-4px p-6px bg-181818 c-fff">box</div>
+    <div class="brad-4px p-6px bg-181818 c-fff">froggie</div>
+    <div class="tablet">tablet only</div>
+    <div class="computer">computer only</div>
+    <div class="ultraWide">ultraWide only</div>
+  </div>
+  <div class="fixed bottom-2rem w-50 bg-818181 c-fff t_bg-f00 c_bg-salmon uw_bg-00f uw_c-fff">Footer</div>
+  
+  <script>
+    const asColor = (str) => {
+      const thereIsAVariable = [...document.styleSheets[0].cssRules].find((rule) => rule.cssText.includes(`--${str}`));
+      if (thereIsAVariable) {
+        return `var(--${str})`;
+      } else {
+        return `#${str}`
+      }
+    };
+    // Add a percent sign when the class name has a number without a unit.
+    // \D means "all non-numeric", so negating it means "if all numeric".
+    const asSize = (str) => !str.match(/\D/) ? str + "%": str;
+    const abbreviationToProperty = {
+      "b": "border",
+      "bb": "border-bottom",
+      "bl": "border-left",
+      "br": "border-right",
+      "brad": "border-radius",
+      "bt": "border-top",
+      "bg": "background-color",
+      "bottom": "bottom",
+      "c": "color",
+      "fs": "font-size",
+      "gap": "gap",
+      "h": "height",
+      "left": "left",
+      "m": "margin",
+      "mb": "margin-bottom",
+      "ml": "margin-left",
+      "mr": "margin-right",
+      "mt": "margin-top",
+      "p": "padding",
+      "pb": "padding-bottom",
+      "pl": "padding-left",
+      "pr": "padding-right",
+      "pt": "padding-top",
+      "right": "right",
+      "top": "top",
+      "w": "width",
+      "z": "z-index",
+    }
+    
+    const rule = (className, name, values, important) => {
+      const value = values.map(asSize).join(" ");
+      
+      let rule = `.${className} `;
+      switch (name) {
+        case "absolute":
+          rule += `{ position: absolute; }`;
+          break;
+        case "alignStart":
+          rule += `{ align-items: flex-start; }`;
+          break;
+        case "alignEnd":
+          rule += `{ align-items: flex-end; }`;
+          break;
+        case "alignCenter":
+          rule += `{ align-items: center; }`;
+          break;
+        case "alignBaseline":
+          rule += `{ align-items: baseline; }`;
+          break;
+        case "alignStretch":
+          rule += `{ align-items: stretch; }`;
+          break;
+        case "b":
+          rule += `{ border: ${asSize(values[0])} ${values[1]} ${asColor(values[2])}; }`;
+          break;
+        case "bg":
+          rule += `{ background-color: ${asColor(values[0])}; }`;
+          break;
+        case "bx":
+          rule += `{
+            border-left: ${asSize(values[0])} ${values[1]} ${asColor(values[2])};
+            border-right: ${asSize(values[0])} ${values[1]} ${asColor(values[2])};
+          }`;
+          break;
+        case "by":
+          rule += `{
+            border-top: ${asSize(values[0])} ${values[1]} ${asColor(values[2])};
+            border-bottom: ${asSize(values[0])} ${values[1]} ${asColor(values[2])};
+          }`;
+          break;
+        case "c":
+          rule += `{ color: ${asColor(values[0])}; }`;
+          break;
+        case "fixed":
+          rule += `{ position: fixed; }`;
+          break;
+        case "flex":
+          rule += `{ display: flex; }`;
+          break;
+        case "justifyNormal":
+          rule += "{ justify-content: normal; }";
+          break;
+        case "justifyStart":
+          rule += "{ justify-content: flex-start; }";
+          break;
+        case "justifyEnd":
+          rule += "{ justify-content: flex-end; }";
+          break;
+        case "justifyCenter":
+          rule += "{ justify-content: center; }";
+          break;
+        case "justifyBetween":
+          rule += "{ justify-content: space-between; }";
+          break;
+        case "justifyAround":
+          rule += "{ justify-content: space-around; }";
+          break;
+        case "justifyEvenly":
+          rule += "{ justify-content: space-evenly; }";
+          break;
+        case "justifyStretch":
+          rule += "{ justify-content: stretch; }";
+          break;
+        case "mx":
+          rule += `{ margin-left: ${value}; margin-right: ${value}; }`;
+          break;
+        case "my":
+          rule += `{ margin-top: ${value}; margin-bottom: ${value}; }`;
+          break;
+        case "px":
+          rule += `{ padding-left: ${value}; padding-right: ${value}; }`;
+          break;
+        case "py":
+          rule += `{ padding-top: ${value}; padding-bottom: ${value}; }`;
+          break;
+        case "relative":
+          rule += `{ position: relative; }`;
+          break;
+        default:
+          rule += `{ ${abbreviationToProperty[name]}: ${value}; }`;
+          break;
+      }
+      
+      if (important) rule = rule.replace("; }", " !important; }");
+
+      console.log(rule);
+      return rule;
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      const stylesheet = document.styleSheets[0];
+      const allClasses = new Set(
+        [...document.querySelectorAll('*')]
+          .filter((el) => el.classList.length > 0)
+          .reduce((set, element) => {
+            element.className.split(' ').forEach(className => set.add(className));
+            return set;
+          }, new Set())
+      );
+
+      stylesheet.insertRule(".default { display: inherit; }");
+      stylesheet.insertRule(".tablet { display: none; }");
+      stylesheet.insertRule(".computer { display: none; }");
+      stylesheet.insertRule(".ultraWide { display: none; }");
+      const tabletMediaIndex = stylesheet.insertRule(`@media screen and (min-width: 768px) {
+        .default { display: none; }
+        .tablet { display: inherit; }
+        .computer { display: none; }
+        .ultraWide { display: none; }
+      }`, stylesheet.cssRules.length);
+      const computerMediaIndex = stylesheet.insertRule(`@media screen and (min-width: 992px) {
+        .default { display: none; }
+        .tablet { display: none; }
+        .computer { display: inherit; }
+        .ultraWide { display: none; }
+      }`, stylesheet.cssRules.length);
+      const ultraWideMediaIndex = stylesheet.insertRule(`@media screen and (min-width: 3440px) {
+        .default { display: none; }
+        .tablet { display: none; }
+        .computer { display: none; }
+        .ultraWide { display: inherit; }
+      }`, stylesheet.cssRules.length);
+      
+      const tabletMediaQuery = stylesheet.cssRules[tabletMediaIndex];
+      const computerMediaQuery = stylesheet.cssRules[computerMediaIndex];
+      const ultraWideMediaQuery = stylesheet.cssRules[ultraWideMediaIndex];
+      
+      const classesNotRequiringRuleGeneration = ["tablet", "computer", "ultraWide"];
+      const classRequiresRuleGen = (className) => !classesNotRequiringRuleGeneration.includes(className);
+
+      [...allClasses]
+        .filter(classRequiresRuleGen)
+        .forEach(className => {
+          const important = className.endsWith("_imp");
+          if (className.startsWith("t_")) {
+            let [name, ...values] = className.split("_")[1].split("-");
+            if (important) {
+              values[values.length-1] = values[values.length-1].split("_imp")[0];
+            }
+            tabletMediaQuery.insertRule(rule(className, name, values, important));
+          } else if (className.startsWith("c_")) {
+            let [name, ...values] = className.split("_")[1].split("-");
+            if (important) {
+              values[values.length-1] = values[values.length-1].split("_imp")[0];
+            }
+            computerMediaQuery.insertRule(rule(className, name, values, important));
+          } else if (className.startsWith("uw_")) {
+            let [name, ...values] = className.split("_")[1].split("-");
+            if (important) {
+              values[values.length-1] = values[values.length-1].split("_imp")[0];
+            }
+            ultraWideMediaQuery.insertRule(rule(className, name, values, important));
+          } else {
+            let [name, ...values] = className.split("-");
+            if (important) {
+              values[values.length-1] = values[values.length-1].split("_imp")[0];
+            }
+            stylesheet.insertRule(rule(className, name, values, important));
+          }
+      });
+    });
+  </script>
+</body>
+</html>
