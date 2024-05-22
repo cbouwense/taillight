@@ -11,7 +11,7 @@
   </style>
 </head>
 <body class="bg-00f_imp bg-0f0_imp m-0">
-  <h1 class="c-red">Heading</h1>
+  <h1 class="c-red z-top">Heading</h1>
   <div class="flex gap-1rem justifyStart c_justifyBetween uw_justifyBetween">
     <div class="brad-4px p-6px bg-181818 c-fff">flex</div>
     <div class="brad-4px p-6px bg-181818 c-fff">box</div>
@@ -25,16 +25,12 @@
   <script>
     const asColor = (str) => {
       const thereIsAVariable = [...document.styleSheets[0].cssRules].find((rule) => rule.cssText.includes(`--${str}`));
-      if (thereIsAVariable) {
-        return `var(--${str})`;
-      } else {
-        return `#${str}`
-      }
+      return thereIsAVariable ? `var(--${str})` : `#${str}`;
     };
     // Add a percent sign when the class name has a number without a unit.
     // \D means "all non-numeric", so negating it means "if all numeric".
     const asSize = (str) => !str.match(/\D/) ? str + "%": str;
-    const abbreviationToProperty = {
+    const abbrevAsProperty = {
       "b": "border",
       "bb": "border-bottom",
       "bl": "border-left",
@@ -64,11 +60,11 @@
       "z": "z-index",
     }
     
-    const rule = (className, name, values, important) => {
-      const value = values.map(asSize).join(" ");
+    const rule = (className, abbrev, values, important) => {
+      const valuesAsSizes = values.map(asSize).join(" ");
       
       let rule = `.${className} `;
-      switch (name) {
+      switch (abbrev) {
         case "absolute":
           rule += `{ position: absolute; }`;
           break;
@@ -139,22 +135,25 @@
           rule += "{ justify-content: stretch; }";
           break;
         case "mx":
-          rule += `{ margin-left: ${value}; margin-right: ${value}; }`;
+          rule += `{ margin-left: ${valuesAsSizes}; margin-right: ${valuesAsSizes}; }`;
           break;
         case "my":
-          rule += `{ margin-top: ${value}; margin-bottom: ${value}; }`;
+          rule += `{ margin-top: ${valuesAsSizes}; margin-bottom: ${valuesAsSizes}; }`;
           break;
         case "px":
-          rule += `{ padding-left: ${value}; padding-right: ${value}; }`;
+          rule += `{ padding-left: ${valuesAsSizes}; padding-right: ${valuesAsSizes}; }`;
           break;
         case "py":
-          rule += `{ padding-top: ${value}; padding-bottom: ${value}; }`;
+          rule += `{ padding-top: ${valuesAsSizes}; padding-bottom: ${valuesAsSizes}; }`;
           break;
         case "relative":
           rule += `{ position: relative; }`;
           break;
+        case "z":
+          rule += `{ z-index: ${values[0] === "top" ? "99999" : values[0]} }`;
+          break;
         default:
-          rule += `{ ${abbreviationToProperty[name]}: ${value}; }`;
+          rule += `{ ${abbrevAsProperty[abbrev]}: ${valuesAsSizes}; }`;
           break;
       }
       
