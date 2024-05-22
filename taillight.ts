@@ -91,6 +91,9 @@ const rule = (className: string, abbrev: keyof typeof abbrevAsProperty | string,
     case "flex":
         rule += `{ display: flex; }`;
         break;
+    case "flexCenter":
+        rule += `{ display: flex; justify-content: center; align-items: center; }`;
+        break;
     case "justifyNormal":
         rule += "{ justify-content: normal; }";
         break;
