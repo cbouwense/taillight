@@ -7,7 +7,7 @@ const asColor = (str: string, document: Document) => {
 // \D means "all non-numeric", so negating it means "if all numeric".
 const asSize = (str: string) => !str.match(/\D/) ? str + "%": str;
 
-const abbrevAsProperty: Record<string, string> = {
+const abbrevAsProperty = {
     "b": "border",
     "bb": "border-bottom",
     "bl": "border-left",
@@ -22,7 +22,11 @@ const abbrevAsProperty: Record<string, string> = {
     "h": "height",
     "left": "left",
     "m": "margin",
+    "maxh": "max-height",
+    "maxw": "max-width",
     "mb": "margin-bottom",
+    "minh": "min-height",
+    "minw": "min-width",
     "ml": "margin-left",
     "mr": "margin-right",
     "mt": "margin-top",
@@ -35,9 +39,9 @@ const abbrevAsProperty: Record<string, string> = {
     "top": "top",
     "w": "width",
     "z": "z-index",
-}
+} as const;
 
-const rule = (className: string, abbrev: string, values: string[], important: boolean) => {
+const rule = (className: string, abbrev: keyof typeof abbrevAsProperty | string, values: string[], important: boolean) => {
     const valuesAsSizes = values.map(asSize).join(" ");
     
     let rule = `.${className} `;
@@ -68,14 +72,14 @@ const rule = (className: string, abbrev: string, values: string[], important: bo
         break;
     case "bx":
         rule += `{
-        border-left: ${asSize(values[0])} ${values[1]} ${asColor(values[2], document)};
-        border-right: ${asSize(values[0])} ${values[1]} ${asColor(values[2], document)};
+            border-left: ${asSize(values[0])} ${values[1]} ${asColor(values[2], document)};
+            border-right: ${asSize(values[0])} ${values[1]} ${asColor(values[2], document)};
         }`;
         break;
     case "by":
         rule += `{
-        border-top: ${asSize(values[0])} ${values[1]} ${asColor(values[2], document)};
-        border-bottom: ${asSize(values[0])} ${values[1]} ${asColor(values[2], document)};
+            border-top: ${asSize(values[0])} ${values[1]} ${asColor(values[2], document)};
+            border-bottom: ${asSize(values[0])} ${values[1]} ${asColor(values[2], document)};
         }`;
         break;
     case "c":
@@ -126,11 +130,39 @@ const rule = (className: string, abbrev: string, values: string[], important: bo
     case "relative":
         rule += `{ position: relative; }`;
         break;
+    case "shadowSm": 
+        rule += `{ box-shadow: 0 1px 2px 0 rgb(0, 0, 0, 0.05); }`;
+        break;
+    case "shadow": 
+        rule += `{ box-shadow: 0 1px 3px 0 rgb(0, 0, 0, 0.1), 0 1px 2px -1px rgb(0, 0, 0, 0.1); }`;
+        break;
+    case "shadowMd": 
+        rule += `{ box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.1), 0 2px 4px -2px rgb(0, 0, 0, 0.1); }`;
+        break;
+    case "shadowLg": 
+        rule += `{ box-shadow: 0 10px 15px -3px rgb(0, 0, 0, 0.1), 0 4px 6px -4px rgb(0, 0, 0, 0.1); }`;
+        break;
+    case "shadowXl": 
+        rule += `{ box-shadow: 0 20px 25px -5px rgb(0, 0, 0, 0.1), 0 8px 10px -6px rgb(0, 0, 0, 0.1); }`;
+        break;
+    case "shadowXxl":
+        rule += `{ box-shadow: 0 25px 50px -12px rgb(0, 0, 0, 0.25); }`;
+        break;
+    case "shadowInner": 
+        rule += `{ box-shadow: inset 0 2px 4px 0 rgb(0, 0, 0, 0.05); }`;
+        break;
+    case "shadowNone": 
+        rule += `{ box-shadow: 0 0 #0000; }`;
+        break;
     case "z":
         rule += `{ z-index: ${values[0] === "top" ? "99999" : values[0]} }`;
         break;
     default:
-        rule += `{ ${abbrevAsProperty[abbrev]}: ${valuesAsSizes}; }`;
+        if (!Object(abbrevAsProperty).hasOwnProperty(abbrev)) {
+            throw `Property \`${abbrev}\` is not supported.`;
+        }
+
+        rule += `{ ${abbrevAsProperty[abbrev as keyof typeof abbrevAsProperty]}: ${valuesAsSizes}; }`;
         break;
     }
     
@@ -146,7 +178,7 @@ window.addEventListener('DOMContentLoaded', function() {
         Array.from(document.querySelectorAll('*'))
             .filter((el) => el.classList.length > 0)
             .reduce((set, element) => {
-                element.className.split(' ').forEach(className => set.add(className));
+                element.className.split(/\s/).forEach(className => set.add(className));
                 return set;
             }, new Set<string>())
     );
@@ -186,29 +218,45 @@ window.addEventListener('DOMContentLoaded', function() {
     .forEach(className => {
         const important = className.endsWith("_imp");
         if (className.startsWith("t_")) {
-        let [name, ...values] = className.split("_")[1].split("-");
-        if (important) {
-            values[values.length-1] = values[values.length-1].split("_imp")[0];
-        }
-        tabletMediaQuery.insertRule(rule(className, name, values, important));
+            let [name, ...values] = className.split("_")[1].split("-");
+            if (important) {
+                values[values.length-1] = values[values.length-1].split("_imp")[0];
+            }
+            try {
+                tabletMediaQuery.insertRule(rule(className, name, values, important));
+            } catch (e) {
+                console.error(e);
+            }
         } else if (className.startsWith("c_")) {
-        let [name, ...values] = className.split("_")[1].split("-");
-        if (important) {
-            values[values.length-1] = values[values.length-1].split("_imp")[0];
-        }
-        computerMediaQuery.insertRule(rule(className, name, values, important));
+            let [name, ...values] = className.split("_")[1].split("-");
+            if (important) {
+                values[values.length-1] = values[values.length-1].split("_imp")[0];
+            }
+            try {
+                computerMediaQuery.insertRule(rule(className, name, values, important));
+            } catch (e) {
+                console.error(e);
+            }
         } else if (className.startsWith("uw_")) {
-        let [name, ...values] = className.split("_")[1].split("-");
-        if (important) {
-            values[values.length-1] = values[values.length-1].split("_imp")[0];
-        }
-        ultraWideMediaQuery.insertRule(rule(className, name, values, important));
+            let [name, ...values] = className.split("_")[1].split("-");
+            if (important) {
+                values[values.length-1] = values[values.length-1].split("_imp")[0];
+            }
+            try {
+                ultraWideMediaQuery.insertRule(rule(className, name, values, important));
+            } catch (e) {
+                console.error(e);
+            }
         } else {
-        let [name, ...values] = className.split("-");
-        if (important) {
-            values[values.length-1] = values[values.length-1].split("_imp")[0];
-        }
-        stylesheet.insertRule(rule(className, name, values, important));
+            let [name, ...values] = className.split("-");
+            if (important) {
+                values[values.length-1] = values[values.length-1].split("_imp")[0];
+            }
+            try {
+                stylesheet.insertRule(rule(className, name, values, important));
+            } catch (e) {
+                console.error(e);
+            }
         }
     });
 });
