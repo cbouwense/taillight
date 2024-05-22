@@ -85,6 +85,9 @@ const rule = (className: string, abbrev: keyof typeof abbrevAsProperty | string,
     case "c":
         rule += `{ color: ${asColor(values[0], document)}; }`;
         break;
+    case "column":
+        rule += `{ flex-direction: column; }`;
+        break;
     case "fixed":
         rule += `{ position: fixed; }`;
         break;
@@ -132,6 +135,9 @@ const rule = (className: string, abbrev: keyof typeof abbrevAsProperty | string,
         break;
     case "relative":
         rule += `{ position: relative; }`;
+        break;
+    case "row":
+        rule += `{ flex-direction: row; }`;
         break;
     case "shadowSm": 
         rule += `{ box-shadow: 0 1px 2px 0 rgb(0, 0, 0, 0.05); }`;
