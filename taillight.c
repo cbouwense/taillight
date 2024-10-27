@@ -1,6 +1,6 @@
 #include "guppy.h"
 
-// m_w-100rem -> .m_w-100rem { width: 100rem; }
+// "m_w-100rem!" -> ".m_w-100rem\! { width: 100rem !important; }:
 GupString generate_rule(GupArena *a, GupString raw_rule) {
     GupString taillight_rule = gup_string_create_arena(a);
 
@@ -18,6 +18,7 @@ GupString generate_rule(GupArena *a, GupString raw_rule) {
     GupString taillight_class = gup_string_create_arena(a);
     for (int i = 0; i < raw_rule.count; i++) {
         switch (raw_rule.data[i]) {
+            // TODO: implement !important
             case '!': {
                 gup_string_append_cstr_arena(a, &taillight_class, "\\!");
                 break;
@@ -36,7 +37,6 @@ GupString generate_rule(GupArena *a, GupString raw_rule) {
             }
         }
     }
-    // TODO: bang
 
     // ".m_w-100rem { "
     gup_string_append_arena(a, &taillight_rule, '.');
