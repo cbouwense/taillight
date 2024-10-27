@@ -26,7 +26,7 @@ index.html
 
 taillight.css
 ```css
-/* Some boilerplate styles */
+/* Not pictured: some boilerplate styles that taillight also gives you */
 .m-0 {
   margin: 0;
 }
