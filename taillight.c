@@ -73,9 +73,6 @@ GupString generate_rule(GupArena *a, GupString raw_rule) {
     gup_string_append_str_arena(a, &taillight_rule, taillight_class);
     gup_string_append_cstr_arena(a, &taillight_rule, " {\n");
 
-    gup_array_string_print(name_and_namespace_as_tokens);
-    printf("has_namespace: %d\n", has_namespace);
-
     if (gup_string_eq_cstr(abbreviated_name, "absolute")) {
         KEY_VAL("position: absolute");
     } else if (gup_string_eq_cstr(abbreviated_name, "alignStart")) {
