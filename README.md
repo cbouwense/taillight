@@ -1,6 +1,6 @@
 # taillight
 
-Generate a CSS stylesheet automatically from an HTML document.
+Generate a CSS stylesheet automatically from an HTML document with Tailwind-like class names.
 
 ## Quick start
 
