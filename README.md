@@ -2,10 +2,18 @@
 
 Generate a CSS stylesheet automatically from an HTML document.
 
+## Quick start
+
+```sh
+make
+./taillight
+```
+
 ## Example
 
 ### Input HTML
 
+index.html
 ```html
 <body class="m-0">
   <main class="w-100% mb-8rem p-2rem z-1 flex column gap-1rem fs-1.5rem">
@@ -13,8 +21,9 @@ Generate a CSS stylesheet automatically from an HTML document.
 </body>
 ```
 
-### Output 
+### Output CSS
 
+taillight.css
 ```css
 .m-0 { margin: 0; }
 .w-100\% { width: 100%; }
@@ -29,25 +38,17 @@ Generate a CSS stylesheet automatically from an HTML document.
 
 ## Compile and Run
 
-### Quick start
-
-```sh
-make
-./taillight
-```
-
-### Long version
 ```sh
 # Compile via Makefile (uses clang)
 make
 
 # Or compile however you want
 cc -o taillight taillight.c
-zig cc 
+zig build-exe taillight.c
 
 # Default input is ./index.html and default output is ./taillight.css 
 ./taillight
 
 # Or you can specify what you want
-./taillight ../path/to/input.html ./path/to/output.css
+./taillight ../relative/path/to/input.html ./relative/../path/to/output.css
 ```
