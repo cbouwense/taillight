@@ -1,5 +1,25 @@
 #include "guppy.h"
 
+#define KEY_VAL(key_val_pair) \
+    do {\
+        if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "  ");\
+        gup_string_append_cstr_arena(a, &taillight_rule, "  ");\
+        gup_string_append_cstr_arena(a, &taillight_rule, key_val_pair);\
+        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");\
+        gup_string_append_cstr_arena(a, &taillight_rule, ";\n");\
+    } while (0)
+
+#define KEY_WITH_PARSED_VAL(key) \
+    do {\
+        if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "  ");\
+        gup_string_append_cstr_arena(a, &taillight_rule, "  ");\
+        gup_string_append_cstr_arena(a, &taillight_rule, key);\
+        gup_string_append_cstr_arena(a, &taillight_rule, ": ");\
+        gup_string_append_str_arena(a, &taillight_rule, value_and_units);\
+        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");\
+        gup_string_append_cstr_arena(a, &taillight_rule, ";\n");\
+    } while (0)
+
 // "m_w-100rem!" -> ".w-100rem\! { width: 100rem !important; }:
 GupString generate_rule(GupArena *a, GupString raw_rule) {
     GupString taillight_rule = gup_string_create_arena(a);
@@ -51,373 +71,168 @@ GupString generate_rule(GupArena *a, GupString raw_rule) {
     if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "  ");
     gup_string_append_arena(a, &taillight_rule, '.');
     gup_string_append_str_arena(a, &taillight_rule, taillight_class);
-    gup_string_append_cstr_arena(a, &taillight_rule, " { ");
+    gup_string_append_cstr_arena(a, &taillight_rule, " {\n");
 
     gup_array_string_print(name_and_namespace_as_tokens);
     printf("has_namespace: %d\n", has_namespace);
 
     if (gup_string_eq_cstr(abbreviated_name, "absolute")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "position: absolute");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("position: absolute");
     } else if (gup_string_eq_cstr(abbreviated_name, "alignStart")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "align-items: flex-start");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("align-items: flex-start");
     } else if (gup_string_eq_cstr(abbreviated_name, "alignEnd")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "align-items: flex-end");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("align-items: flex-end");
     } else if (gup_string_eq_cstr(abbreviated_name, "alignCenter")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "align-items: center");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("align-items: center");
     } else if (gup_string_eq_cstr(abbreviated_name, "alignBaseline")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "align-items: baseline");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("align-items: baseline");
     } else if (gup_string_eq_cstr(abbreviated_name, "alignStretch")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "align-items: stretch");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
-    } else if (gup_string_eq_cstr(abbreviated_name, "b")) {
-        // TODO: border is a strange one, it has such variable values, not sure how to process it yet. 
-        gup_string_append_cstr_arena(a, &taillight_rule, "border: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("align-items: stretch");
+    } else if (gup_string_eq_cstr(abbreviated_name, "b")) { // TODO: border is a strange one, it has such variable values, not sure how to process it yet.
+        KEY_WITH_PARSED_VAL("border");
     } else if (gup_string_eq_cstr(abbreviated_name, "bb")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "border-bottom: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("border-bottom");
     } else if (gup_string_eq_cstr(abbreviated_name, "bg")) {
         if (gup_string_eq_cstr(value_and_units, "default")) {
-            gup_string_append_cstr_arena(a, &taillight_rule, "background-color: var(--background-color)");
+            KEY_VAL("background-color: var(--background-color)");
         } else {
-            gup_string_append_str_arena(a, &taillight_rule, value_and_units);
+            KEY_WITH_PARSED_VAL("background-color");
         }
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
     } else if (gup_string_eq_cstr(abbreviated_name, "bl")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "border-left: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("border-left");
     } else if (gup_string_eq_cstr(abbreviated_name, "br")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "border-right: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("border-right");
     } else if (gup_string_eq_cstr(abbreviated_name, "brad")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "border-radius: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("border-radius");
     } else if (gup_string_eq_cstr(abbreviated_name, "bt")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "border-top: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("border-top");
     } else if (gup_string_eq_cstr(abbreviated_name, "bottom")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "bottom: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("bottom");
     } else if (gup_string_eq_cstr(abbreviated_name, "bx")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "\nborder-left: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n");
-        gup_string_append_cstr_arena(a, &taillight_rule, "border-right: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n}\n");
+        KEY_WITH_PARSED_VAL("border-left");
+        KEY_WITH_PARSED_VAL("border-right");
     } else if (gup_string_eq_cstr(abbreviated_name, "by")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "\nborder-top: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n");
-        gup_string_append_cstr_arena(a, &taillight_rule, "border-bottom: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n}\n");
+        KEY_WITH_PARSED_VAL("border-top");
+        KEY_WITH_PARSED_VAL("border-bottom");
     } else if (gup_string_eq_cstr(abbreviated_name, "c")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "color: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("color");
     } else if (gup_string_eq_cstr(abbreviated_name, "column")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "flex-direction: column ");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("flex-direction: column");
     } else if (gup_string_eq_cstr(abbreviated_name, "dot")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "\n");
-        gup_string_append_cstr_arena(a, &taillight_rule, "list-style-type: disc");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
-
-        gup_string_append_cstr_arena(a, &taillight_rule, "margin-left: 1.5rem");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
-        gup_string_append_cstr_arena(a, &taillight_rule, "}\n");
+        KEY_VAL("list-style-type: disc");
+        KEY_VAL("margin-left: 1.5rem");
     } else if (gup_string_eq_cstr(abbreviated_name, "fixed")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "position: fixed");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("position: fixed");
     } else if (gup_string_eq_cstr(abbreviated_name, "flex")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "display: flex");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("display: flex");
     } else if (gup_string_eq_cstr(abbreviated_name, "fs")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "font-size: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("font-size");
     } else if (gup_string_eq_cstr(abbreviated_name, "gap")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "gap: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("gap");
     } else if (gup_string_eq_cstr(abbreviated_name, "h")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "height: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
-    } else if (gup_string_eq_cstr(abbreviated_name, "hoverable")) {
-        // .hoverable {
-        //   color: var(--text-primary-color);
-        //   transition: color 0.25s ease;
-        // }
-        gup_string_append_cstr_arena(a, &taillight_rule, "\n");
-        gup_string_append_cstr_arena(a, &taillight_rule, "color: var(--text-primary-color)");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
-        gup_string_append_cstr_arena(a, &taillight_rule, "transition: color 0.25s ease");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("height");
+    } else if (gup_string_eq_cstr(abbreviated_name, "hoverable")) { // TODO: macro for multi rule rules
+        KEY_VAL("color: var(--text-primary-color)");
+        KEY_VAL("transition: color 0.25s ease");
         gup_string_append_cstr_arena(a, &taillight_rule, "}\n");
-        
+
         // .hoverable:hover {
         //   color: var(--text-secondary-color);
         // }
         gup_string_append_cstr_arena(a, &taillight_rule, ".hoverable:hover {\n");
-        gup_string_append_cstr_arena(a, &taillight_rule, "color: var(--text-secondary-color)");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
-        gup_string_append_cstr_arena(a, &taillight_rule, "}\n");
+        KEY_VAL("  color: var(--text-secondary-color)");
     } else if (gup_string_eq_cstr(abbreviated_name, "justifyStart")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "{ justify-content: flex-start");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("justify-content: flex-start");
     } else if (gup_string_eq_cstr(abbreviated_name, "justifyEnd")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "{ justify-content: flex-end");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("justify-content: flex-end");
     } else if (gup_string_eq_cstr(abbreviated_name, "justifyCenter")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "{ justify-content: center");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("justify-content: center");
     } else if (gup_string_eq_cstr(abbreviated_name, "justifyBetween")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "{ justify-content: space-between");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("justify-content: space-between");
     } else if (gup_string_eq_cstr(abbreviated_name, "justifyAround")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "{ justify-content: space-around");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("justify-content: space-around");
     } else if (gup_string_eq_cstr(abbreviated_name, "justifyEvenly")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "{ justify-content: space-evenly");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("justify-content: space-evenly");
     } else if (gup_string_eq_cstr(abbreviated_name, "justifyStretch")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "{ justify-content: stretch");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("justify-content: stretch");
     } else if (gup_string_eq_cstr(abbreviated_name, "left")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "left: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("left");
     } else if (gup_string_eq_cstr(abbreviated_name, "m")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "margin: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("margin");
     } else if (gup_string_eq_cstr(abbreviated_name, "maxh")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "max-height: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("max-height");
     } else if (gup_string_eq_cstr(abbreviated_name, "maxw")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "max-width: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("max-width");
     } else if (gup_string_eq_cstr(abbreviated_name, "mb")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "margin-bottom: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("margin-bottom");
     } else if (gup_string_eq_cstr(abbreviated_name, "minh")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "min-height: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("min-height");
     } else if (gup_string_eq_cstr(abbreviated_name, "minw")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "min-width: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("min-width");
     } else if (gup_string_eq_cstr(abbreviated_name, "ml")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "margin-left: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("margin-left");
     } else if (gup_string_eq_cstr(abbreviated_name, "mr")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "margin-right: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("margin-right");
     } else if (gup_string_eq_cstr(abbreviated_name, "mt")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "margin-top: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("margin-top");
     } else if (gup_string_eq_cstr(abbreviated_name, "mx")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "\n");
- 
-        if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "    ");
-        gup_string_append_cstr_arena(a, &taillight_rule,                    "margin-left: ");
-        gup_string_append_str_arena(a, &taillight_rule,                     value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule,  " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule,                    ";\n");
-
-        if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "    ");
-        gup_string_append_cstr_arena(a, &taillight_rule,                    "margin-right: ");
-        gup_string_append_str_arena(a, &taillight_rule,                     value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule,  " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule,                    ";\n");
-        if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "  ");
-        gup_string_append_cstr_arena(a, &taillight_rule,                    "}");
+        KEY_WITH_PARSED_VAL("margin-left");
+        KEY_WITH_PARSED_VAL("margin-right");
     } else if (gup_string_eq_cstr(abbreviated_name, "my")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "\nmargin-top: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n");
-        gup_string_append_cstr_arena(a, &taillight_rule, "margin-bottom: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n}\n");
+        KEY_WITH_PARSED_VAL("margin-top");
+        KEY_WITH_PARSED_VAL("margin-bottom");
     } else if (gup_string_eq_cstr(abbreviated_name, "p")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "padding: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("padding");
     } else if (gup_string_eq_cstr(abbreviated_name, "pb")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "padding-bottom: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("padding-bottom");
     } else if (gup_string_eq_cstr(abbreviated_name, "pl")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "padding-left: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("padding-left");
     } else if (gup_string_eq_cstr(abbreviated_name, "pr")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "padding-right: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("padding-right");
     } else if (gup_string_eq_cstr(abbreviated_name, "pt")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "padding-top: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("padding-top");
     } else if (gup_string_eq_cstr(abbreviated_name, "px")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "\npadding-left: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n");
-        gup_string_append_cstr_arena(a, &taillight_rule, "padding-right: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n}\n");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("padding-left");
+        KEY_WITH_PARSED_VAL("padding-right");
     } else if (gup_string_eq_cstr(abbreviated_name, "py")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "\npadding-top: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n");
-        gup_string_append_cstr_arena(a, &taillight_rule, "padding-bottom: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n}\n");
+        KEY_WITH_PARSED_VAL("padding-top");
+        KEY_WITH_PARSED_VAL("padding-bottom");
     } else if (gup_string_eq_cstr(abbreviated_name, "right")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "right: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("right");
     } else if (gup_string_eq_cstr(abbreviated_name, "relative")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "position: relative");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("position: relative");
     } else if (gup_string_eq_cstr(abbreviated_name, "row")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "flex-direction: row");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("flex-direction: row");
     } else if (gup_string_eq_cstr(abbreviated_name, "shadowSm")) { 
-        gup_string_append_cstr_arena(a, &taillight_rule, "box-shadow: 0 1px 2px 0 rgb(0, 0, 0, 0.05)");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("box-shadow: 0 1px 2px 0 rgb(0, 0, 0, 0.05)");
     } else if (gup_string_eq_cstr(abbreviated_name, "shadow")) { 
-        gup_string_append_cstr_arena(a, &taillight_rule, "box-shadow: 0 1px 3px 0 rgb(0, 0, 0, 0.1), 0 1px 2px -1px rgb(0, 0, 0, 0.1)");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("box-shadow: 0 1px 3px 0 rgb(0, 0, 0, 0.1), 0 1px 2px -1px rgb(0, 0, 0, 0.1)");
     } else if (gup_string_eq_cstr(abbreviated_name, "shadowMd")) { 
-        gup_string_append_cstr_arena(a, &taillight_rule, "box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.1), 0 2px 4px -2px rgb(0, 0, 0, 0.1)");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.1), 0 2px 4px -2px rgb(0, 0, 0, 0.1)");
     } else if (gup_string_eq_cstr(abbreviated_name, "shadowLg")) { 
-        gup_string_append_cstr_arena(a, &taillight_rule, "box-shadow: 0 10px 15px -3px rgb(0, 0, 0, 0.1), 0 4px 6px -4px rgb(0, 0, 0, 0.1)");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("box-shadow: 0 10px 15px -3px rgb(0, 0, 0, 0.1), 0 4px 6px -4px rgb(0, 0, 0, 0.1)");
     } else if (gup_string_eq_cstr(abbreviated_name, "shadowXl")) { 
-        gup_string_append_cstr_arena(a, &taillight_rule, "box-shadow: 0 20px 25px -5px rgb(0, 0, 0, 0.1), 0 8px 10px -6px rgb(0, 0, 0, 0.1)");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("box-shadow: 0 20px 25px -5px rgb(0, 0, 0, 0.1), 0 8px 10px -6px rgb(0, 0, 0, 0.1)");
     } else if (gup_string_eq_cstr(abbreviated_name, "shadowXxl")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "box-shadow: 0 25px 50px -12px rgb(0, 0, 0, 0.25)");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("box-shadow: 0 25px 50px -12px rgb(0, 0, 0, 0.25)");
     } else if (gup_string_eq_cstr(abbreviated_name, "shadowInner")) { 
-        gup_string_append_cstr_arena(a, &taillight_rule, "box-shadow: inset 0 2px 4px 0 rgb(0, 0, 0, 0.05)");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("box-shadow: inset 0 2px 4px 0 rgb(0, 0, 0, 0.05)");
     } else if (gup_string_eq_cstr(abbreviated_name, "shadowNone")) { 
-        gup_string_append_cstr_arena(a, &taillight_rule, "box-shadow: 0 0 #0000");
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_VAL("box-shadow: 0 0 #0000");
     } else if (gup_string_eq_cstr(abbreviated_name, "top")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "top: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("top");
     } else if (gup_string_eq_cstr(abbreviated_name, "w")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "width: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("width");
     } else if (gup_string_eq_cstr(abbreviated_name, "z")) {
-        gup_string_append_cstr_arena(a, &taillight_rule, "z-index: ");
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");
-        gup_string_append_cstr_arena(a, &taillight_rule, "; }");
+        KEY_WITH_PARSED_VAL("z-index");
     } else {
         printf("WARNING: Unable to parse the following class name:\n");
         gup_string_print(abbreviated_name);
         printf("Either taillight does not support that key, you misspelled it, or there is a bug in taillight.\n");
     }
+
+    if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "  ");
+    gup_string_append_cstr_arena(a, &taillight_rule, "}");
 
     return taillight_rule;
 }
