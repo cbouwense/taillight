@@ -285,8 +285,14 @@ GupArrayString   gup_file_read_lines_keep_newlines_arena(GupArena *a, const char
 char           **gup_file_read_lines_as_cstrs_keep_newlines(const char *file_path);
 char           **gup_file_read_lines_as_cstrs_keep_newlines_arena(GupArena *a, const char *file_path);
 long             gup_file_size(const char *file_path);
-bool             gup_file_write(const char *text_to_write, const char *file_path);
-void             gup_file_write_lines(char **lines_to_write, const int line_count, const char *file_path);
+void             gup_file_write_arena(GupArena *a, GupString text_to_write, const char *file_path);
+void             gup_file_write_cstr(const char *text_to_write, const char *file_path);
+void             gup_file_write_lines_arena(GupArena *a, GupArrayString lines_to_write, const char *file_path);
+void             gup_file_write_lines_cstrs(char **lines_to_write, const int line_count, const char *file_path);
+void             gup_file_append_line_arena(GupArena *a, GupString line_to_write, const char *file_path);
+void             gup_file_append_line_cstr(const char *line_to_write, const char *file_path);
+void             gup_file_append_lines_arena(GupArena *a, GupArrayString lines_to_write, const char *file_path);
+void             gup_file_append_lines_cstrs(char **lines_to_write, const int line_count, const char *file_path);
 
 // Print -------------------------------------------------------------------------------------------
 void gup_print_cwd(void);
@@ -321,6 +327,7 @@ bool           gup_string_eq_cstr(GupString str, const char *cstr, int cstr_leng
 bool           gup_string_contains(GupString str, char c);
 bool           gup_string_contains_substring(GupString str, GupString sub_str); // TODO: contains cstr
 void           gup_string_print(GupString str);
+void           gup_string_debug(GupString str);
 void           gup_string_append(GupString *str, char c);
 void           gup_string_append_arena(GupArena *a, GupString *str, char c);
 void           gup_string_append_str_arena(GupArena *a, GupString *str, GupString str_to_append);
@@ -348,6 +355,7 @@ bool           gup_string_starts_with_cstr(GupString str, const char* cstr);
 bool           gup_string_ends_with(GupString str, GupString sub_str);
 bool           gup_string_ends_with_cstr(GupString str, const char* cstr);
 bool           gup_string_to_int(GupString str, int *out);
+char          *gup_string_to_cstr_arena(GupArena *a, GupString str);
 // TODO: split by substring
 GupArrayString gup_string_split(GupString str, char c);
 GupArrayString gup_string_split_arena(GupArena *a, GupString str, char c);
@@ -2671,30 +2679,89 @@ long gup_file_size(const char *file_path) {
     return file_size;
 }
 
-bool gup_file_write(const char *text_to_write, const char *file_path) {
-    bool result = true;
-
+void gup_file_write_arena(GupArena *a, GupString text_to_write, const char *file_path) {
     FILE *fp = fopen(file_path, "w");
-    if (fp == NULL) {
-        printf("Failed to open file %s\n", file_path);
-        gup_defer_return(false);
-    }
+    // TODO: interpolate file name
+    gup_assert_verbose(fp != NULL, "tried opening a file to write to it, but wasn't able to.");
+
+    fprintf(fp, "%s", gup_string_to_cstr_arena(a, text_to_write));
+
+    fclose(fp);
+}
+
+void gup_file_write_cstr(const char *text_to_write, const char *file_path) {
+    FILE *fp = fopen(file_path, "w");
+    // TODO: interpolate file name
+    gup_assert_verbose(fp != NULL, "tried opening a file to write to it, but wasn't able to.");
 
     fprintf(fp, "%s", text_to_write);
 
-defer:
     fclose(fp);
-    return result;
 }
 
-void gup_file_write_lines(char **lines_to_write, const int line_count, const char *file_path) {
+void gup_file_write_lines_arena(GupArena *a, GupArrayString lines_to_write, const char *file_path) {
+    FILE *fp = fopen(file_path, "w");
+    // TODO: interpolate file name
+    gup_assert_verbose(fp != NULL, "tried opening a file to write to it, but wasn't able to.");
+
+    for (int i = 0; i < lines_to_write.count; i++) {
+        fputs(gup_string_to_cstr_arena(a, lines_to_write.data[i]), fp);
+    }
+
+    fclose(fp);
+}
+
+void gup_file_write_lines_cstrs(char **lines_to_write, const int line_count, const char *file_path) {
     FILE *fp = fopen(file_path, "w");
     gup_assert_verbose(fp != NULL, "tried opening a file to write to it, but wasn't able to.");
 
     for (int i = 0; i < line_count; i++) {
         fputs(lines_to_write[i], fp);
     }
+
+    fclose(fp);
 }
+
+void gup_file_append_line_arena(GupArena *a, GupString line_to_write, const char *file_path) {
+    FILE *fp = fopen(file_path, "a");
+    gup_assert_verbose(fp != NULL, "tried opening a file to append to it, but wasn't able to.");
+
+    fprintf(fp, "%s\n", gup_string_to_cstr_arena(a, line_to_write));
+
+    fclose(fp);
+}
+
+void gup_file_append_line_cstr(const char *line_to_write, const char *file_path) {
+    FILE *fp = fopen(file_path, "a");
+    gup_assert_verbose(fp != NULL, "tried opening a file to append to it, but wasn't able to.");
+
+    fprintf(fp, "%s\n", line_to_write);
+
+    fclose(fp);
+}
+
+void gup_file_append_lines_arena(GupArena *a, GupArrayString lines_to_write, const char *file_path) {
+    FILE *fp = fopen(file_path, "a");
+    gup_assert_verbose(fp != NULL, "tried opening a file to append to it, but wasn't able to.");
+
+    for (int i = 0; i < lines_to_write.count; i++) {
+        fprintf(fp, "%s\n", gup_string_to_cstr_arena(a, lines_to_write.data[i]));
+    }
+
+    fclose(fp);
+}
+
+void gup_file_append_lines_cstrs(char **lines_to_write, const int line_count, const char *file_path) {
+    FILE *fp = fopen(file_path, "a");
+    gup_assert_verbose(fp != NULL, "tried opening a file to append to it, but wasn't able to.");
+
+    for (int i = 0; i < line_count; i++) {
+        fprintf(fp, "%s\n", lines_to_write[i]);
+    }
+
+    fclose(fp);
+}
+
 
 // Print -------------------------------------------------------------------------------------------
 
@@ -2811,6 +2878,21 @@ void _gup_string_print(GupString str, const char* str_name) {
     printf("\"\n");
 }
 #define gup_string_print(str) _gup_string_print(str, #str)
+
+void _gup_string_debug(GupString str, const char* str_name) {
+    printf("%s: {\n", str_name);
+    printf("  capacity: %d\n", str.capacity);
+    printf("  count:    %d\n", str.count);
+    printf("  data:     [");
+    for (int i = 0; i < str.count; i++) {
+        printf("%c", str.data[i]);
+        if (i == str.count - 1) {
+            printf(", ");
+        }
+    }
+    printf("]\n}\n");
+}
+#define gup_string_debug(str) _gup_string_debug(str, #str)
 
 #define gup_string_append gup_array_char_append
 #define gup_string_append_arena gup_array_char_append_arena
@@ -3082,6 +3164,16 @@ bool gup_string_to_int(GupString str, int *out) {
 
     *out = result;
     return true;
+}
+
+char *gup_string_to_cstr_arena(GupArena *a, GupString str) {
+    // +1 because we need to allocate room for null terminator.
+    char *cstr = gup_arena_alloc(a, sizeof(char) * (str.count + 1));
+    for (int i = 0; i < str.count; i++) {
+        cstr[i] = str.data[i];
+    }
+    cstr[str.count] = '\0';
+    return cstr;
 }
 
 // Settings ----------------------------------------------------------------------------------------
