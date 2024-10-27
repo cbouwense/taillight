@@ -108,3 +108,7 @@ zig build-exe taillight.c
 # Or you can specify what you want
 ./taillight ../relative/path/to/input.html ./relative/../path/to/output.css
 ```
+
+## Documentation
+
+Coming soon!
