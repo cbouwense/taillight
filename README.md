@@ -15,8 +15,12 @@ make
 
 index.html
 ```html
-<main class="w-100% c_w-75% ">
-  <a class="hoverable">link with cool effect</a>
+<main class="w-100% c_w-75% bg-#181818">
+  <div class="flex gap-1rem">
+    <span>one</span>
+    <span>two</span>
+    <span>three</span>
+  </div>
 </main>
 ```
 
@@ -25,40 +29,19 @@ index.html
 taillight.css
 ```css
 /* Not pictured: some boilerplate styles that taillight also gives you */
-.m-0 {
-  margin: 0;
+.w-100\% {
+  width: 100%;
 }
-.w-100\%\! {
-  width: 100% !important;
-}
-.mb-8rem {
-  margin-bottom: 8rem;
-}
-.p-2rem {
-  padding: 2rem;
-}
-.z-1 {
-  z-index: 1;
+.bg-#181818 {
+  background-color: #181818;
 }
 .flex {
   display: flex;
 }
-.column {
-  flex-direction: column;
-}
 .gap-1rem {
   gap: 1rem;
 }
-.fs-1\.5rem {
-  font-size: 1.5rem;
-}
-.hoverable {
-  color: var(--text-primary-color);
-  transition: color 0.25s ease;
-}
-.hoverable:hover {
-    color: var(--text-secondary-color);
-}
+/* Media query boilerplate */
 ```
 
 ## Compile and Run
