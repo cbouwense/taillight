@@ -449,8 +449,8 @@ int main(int argc, char **argv) {
     if (unknown_rules.count > 0) {
         printf("WARNING: Taillight found the following class names but didn't recognize them. These are probably just custom classes you have, but you might want to check out this list just in case:\n");
         gup_array_string_print(unknown_rules);
-        printf("Successfully generated taillight rules.\n");
     }
+    printf("Successfully generated taillight rules.\n");
 
     // Write the lines to the final css file 
     printf("Writing taillight rules to %s...\n", css_file_path);
