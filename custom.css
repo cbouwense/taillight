@@ -1,3 +1,12 @@
+.hoverable-text {
+    color: var(--text-primary-color);
+    transition: color 0.25s ease;
+}
+
+.hoverable-text:hover {
+    color: var(--text-secondary-color);
+}
+
 .light-text {
     font-family: "Libre Baskerville", serif;
     font-weight: 200;
