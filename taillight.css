@@ -35,8 +35,8 @@ h6 { font-size: 0.5rem; }
 .w-100\% {
   width: 100%;
 }
-.bg-\#181818 {
-  background-color: #181818;
+.bg-\#dd0000 {
+  background-color: #dd0000;
 }
 .flex {
   display: flex;
@@ -82,4 +82,7 @@ h6 { font-size: 0.5rem; }
   .computer { display: none; }
   .ultrawide { display: inherit; }
   :root { font-size: 18px; }
+  .uw_w-50\% {
+    width: 50%;
+  }
 }
