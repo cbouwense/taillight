@@ -144,6 +144,10 @@ int main(int argc, char **argv) {
                         gup_string_append_cstr_arena(&a, &taillight_class, "\\.");
                         break;
                     }
+                    case '#': {
+                        gup_string_append_cstr_arena(&a, &taillight_class, "\\#");
+                        break;
+                    }
                     default: {
                         gup_string_append_arena(&a, &taillight_class, html_rule.data[i]);
                         break;
