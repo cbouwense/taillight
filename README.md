@@ -15,11 +15,9 @@ make
 
 index.html
 ```html
-<body class="m-0">
-  <main class="w-100%! mb-8rem p-2rem z-1 flex column gap-1rem fs-1.5rem">
-    <a class="hoverable">link with cool effect</a>
-  </main>
-</body>
+<main class="w-100% c_w-75% ">
+  <a class="hoverable">link with cool effect</a>
+</main>
 ```
 
 ### Output CSS
