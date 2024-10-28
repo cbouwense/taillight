@@ -1,23 +1,273 @@
+<html lang="en">
 <!DOCTYPE html>
-<html>
-  <head>
-    <!-- Boilerplate -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Font stuff -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,200;0,400;0,700;1,400&display=swap" rel="stylesheet">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Christian Bouwense</title>
 
-    <title>Styled with Taillight</title>
-    <link rel="stylesheet" href="taillight.css">
-  </head>
-  <body>
-    <div class="fixed w-100% h-10vh bg-black flex justifyCenter alignCenter gap-12rem z-2 pt-1rem shadow">
-      <a class="hoverable h-100% fs-12px c_fs-2rem" href="https://soapy.bar">Buy soap</a>
-      <a class="hoverable h-100% fs-12px c_fs-2rem" href="https://rbitty.art">Buy art</a>
-      <a class="hoverable h-100% fs-12px c_fs-2rem" href="https://shrug.sh">¯\_(ツ)_/¯</a>
-    </div>
-  </body>
+  <!-- Font stuff -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,200;0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <link href="taillight.css" rel="stylesheet">
+  <link href="custom.css" rel="stylesheet">
+</head>
+
+<body class="m-0">
+  <nav class="w-100% sticky p-0-5rem pl-8rem bg-default fs-1.5rem z-2 computer">
+    <ul class="flex gap-4rem">
+      <li><a href="#about" class="hoverable-text">About</a></li>
+      <li><a href="#work" class="hoverable-text">Work</a></li>
+      <li><a href="#skills" class="hoverable-text">Skills</a></li>
+      <li><a href="#experience" class="hoverable-text">Experience</a></li>
+      <li><a href="#contact" class="hoverable-text">Contact</a></li>
+    </ul>
+  </nav>
+  <main class="w-100% mb-8rem z-1 flex column flex-center gap-4rem">
+    <section id="about" class="w-70% m_w-75% mt-4rem m_mt-0 grid grid-col-2 m_grid-col-1 gap-2rem">
+      <div>
+        <h1 class="fs-5rem m_fs-4rem">Hi, I'm Christian.</h1>
+        <img src="./public/headshot.jpg" class="w-100% mobile" />
+        <h2 class="light-text">I develop world class web applications.</h2>
+        <h2 class="light-text">I also tinker with systems programming languages.</h2>
+        <h2 class="light-text">My wife and I make <a href="https://soapy.bar" target="_blank"
+            class="hoverable-text underlineDots">homemade soap</a> from scratch with love.</h2>
+      </div>
+      <img src="./public/headshot.jpg" class="h-75vh computer" />
+    </section>
+    <section id="work" class="w-70% m_w-75%">
+      <h1 class="fs-5rem m_fs-3rem">Some stuff I've made</h1>
+      <div class="grid grid-col-2 m_grid-col-1 gap-1rem">
+        <div class="w-100%">
+          <video autoplay muted loop preload="metadata" class="w-100%">
+            <source src="./public/rbitty-art.webm" type="video/webm">
+            Your browser does not support the video tag.
+          </video>
+          <!-- <img src="./public/rbitty-art.png" class="w-100% mobile" /> -->
+          <h2 class="fs-2rem "><a href="https://rbitty.art/" target="_blank"
+              class="hoverable-text underlineDots">rbitty.art</a></h2>
+          <p class="fs-1.5rem">Web marketplace for my wife's art. Built using <a href="https://alpinejs.dev/"
+              class="hoverable-text underlineDots" target="_blank">alpine.js.</a></p>
+        </div>
+        <div class="w-100%">
+          <video autoplay muted loop preload="metadata" class="w-100%">
+            <source src="./public/go-up.webm" type="video/webm">
+            Your browser does not support the video tag.
+          </video>
+          <!-- <img src="./public/go-up.png" class="w-100% mobile" /> -->
+          <h2 class="fs-2rem "><a href="https://ckuras.itch.io/go-up" target="_blank"
+              class="hoverable-text underlineDots">Go Up</a></h2>
+          <p class="fs-1.5rem">A 2D platformer video game, won first prize in the <a
+              href="https://stevens.gamedevelopment.club/" class="hoverable-text underlineDots">SGDC Game Jam</a>.
+            Co-developed with my friend Chris, and built in <a href="https://unity.com/"
+              class="hoverable-text underlineDots" target="_blank">Unity.</a></p>
+        </div>
+        <div class="w-100%">
+          <iframe src="https://domskis.com" class="w-100% h-50vh m_h-25vh"></iframe>
+          <h2 class="fs-2rem "><a href="https://domskis.com" target="_blank"
+              class="hoverable-text underlineDots">domskis.com</a></h2>
+          <p class="fs-1.5rem">Pizza floating in space, try clicking and dragging! Rendered by the GPU via the WebGPU
+            pipeline. Built with <a href="https://threejs.org/" class="hoverable-text underlineDots"
+              target="_blank">three.js</a>.</p>
+        </div>
+        <div class="w-100%">
+          <video autoplay muted loop preload="metadata" class="w-100%">
+            <source src="./public/soapy-bar.webm" type="video/webm">
+            Your browser does not support the video tag.
+          </video>
+          <!-- <img src="./public/soapy-bar.png" class="w-100% mobile" /> -->
+          <h2 class="fs-2rem "><a href="https://thriving-axolotl-06bcf8.netlify.app/" target="_blank"
+              class="hoverable-text underlineDots">soapy.bar</a></h2>
+          <p class="fs-1.5rem">Web marketplace for the soap business my wife and I run. This site has been deprecated
+            since we moved to Etsy. Built with <a href="https://nextjs.org/" class="hoverable-text underlineDots"
+              target="_blank">Next.js</a> and <a href="https://tailwindcss.com/" class="hoverable-text underlineDots"
+              target="_blank">Tailwind CSS</a>.</p>
+        </div>
+      </div>
+    </section>
+    <section id="skills" class="w-70% m_w-75%">
+      <h1 class="fs-5rem m_fs-3rem">Programming Languages</h1>
+      <div class="grid grid-col-2 m_grid-col-1 gap-2rem m_gap-1rem">
+        <div>
+          <h2 class="fs-2rem m_fs-1.5rem">Professional outlier</h2>
+          <ul class="flex column gap-2rem m_gap-1rem">
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>HTML / CSS / Javascript</span>
+                <span>100%</span>
+              </div>
+              <span class="skill-bar bg-blue w-100%"></span>
+            </li>
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>Typescript</span>
+                <span>95%</span>
+              </div>
+              <span class="skill-bar bg-blue w-95"></span>
+            </li>
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>React / Next.js</span>
+                <span>95%</span>
+              </div>
+              <span class="skill-bar bg-blue w-95"></span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="fs-2rem m_fs-1.5rem">Used in production</h2>
+          <ul class="flex column gap-2rem m_gap-1rem">
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>Python</span>
+                <span>85%</span>
+              </div>
+              <span class="skill-bar bg-green w-85"></span>
+            </li>
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>Java</span>
+                <span>80%</span>
+              </div>
+              <span class="skill-bar bg-green w-80"></span>
+            </li>
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>Golang</span>
+                <span>80%</span>
+              </div>
+              <span class="skill-bar bg-green w-80"></span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="fs-2rem m_fs-1.5rem">Familiar</h2>
+          <ul class="flex column gap-2rem m_gap-1rem">
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>C</span>
+                <span>75%</span>
+              </div>
+              <span class="skill-bar bg-yellow w-75%"></span>
+            </li>
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>C++</span>
+                <span>70%</span>
+              </div>
+              <span class="skill-bar bg-yellow w-70"></span>
+            </li>
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>SQL</span>
+                <span>70%</span>
+              </div>
+              <span class="skill-bar bg-yellow w-70"></span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="fs-2rem m_fs-1.5rem">Learning</h2>
+          <ul class="flex column gap-2rem m_gap-1rem">
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>Rust</span>
+                <span>50%</span>
+              </div>
+              <span class="skill-bar bg-orange w-50"></span>
+            </li>
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>WebAssembly</span>
+                <span>25%</span>
+              </div>
+              <span class="skill-bar bg-orange w-25"></span>
+            </li>
+            <li class="p-1rem rounded lightShadow relative fs-1.5rem">
+              <div class="flex justifyBetween alignCenter">
+                <span>Odin</span>
+                <span>25%</span>
+              </div>
+              <span class="skill-bar bg-orange w-25"></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <section id="experience" class="w-70% m_w-75%">
+      <h1 class="fs-5rem m_fs-3rem">Places I've Worked</h1>
+      <div class="flex justifyCenter gap-4rem m_column m_gap-2rem w-100%">
+        <div class="flex flex-1 column gap-2rem m_gap-1rem">
+          <div>
+            <h2 class="fs-3rem m_fs-2rem "><a href="https://www.bigeye.com/" class="hoverable-text underlineDots"
+                target="_blank">Bigeye</a></h2>
+            <p class="fs-1.5rem m_fs-1rem">Bigeye is a startup that offers a <a
+                href="https://www.bigeye.com/blog/data-observability" class="underlineDots hoverable-text">data
+                observability</a> platform. I joined the company as a frontend engineer in December of 2021, and it's my
+              current gig.</p>
+            <p class="fs-1.5rem m_fs-1rem">My favorite accomplishment has been leading the adoption of unit, integration
+              and
+              end-to-end testing. By advocacy and example, my team has increased code coverage from 13% to 84%.</p>
+          </div>
+          <div>
+            <h2 class="fs-3rem m_fs-2rem "><a href="https://www.ikea.com/" class="hoverable-text underlineDots"
+                target="_blank">IKEA</a>
+            </h2>
+            <p class="fs-1.5rem m_fs-1rem">I joined the IKEA US Digital Hub as a frontend engineer in August 2020. I
+              mainly worked on the checkout experience at <a href="https://ikea.com"
+                class="underlineDots hoverable-text" target="_blank">ikea.com</a>.</p>
+            <p class="fs-1.5rem m_fs-1rem">My favorite aspect of this role was designing and running A/B tests. I also
+              enjoyed learning a bit of conversational Swedish through <a
+                href="https://en.wikipedia.org/wiki/Language_immersion"
+                class="hoverable-text underlineDots">immersion</a>.</p>
+          </div>
+        </div>
+        <div class="flex flex-1 column gap-2rem m_gap-1rem">
+          <div>
+            <h2 class="fs-3rem m_fs-2rem "><a href="https://www.vistarmedia.com/" class="hoverable-text underlineDots"
+                target="_blank">Vistar Media</a>
+            </h2>
+            <p class="fs-1.5rem m_fs-1rem">Vistar Media creates software for digital-out-of-home advertising (think
+              Times Square billboards). I joined Vistar as a full stack engineer in February 2019.</p>
+            <p class="fs-1.5rem m_fs-1rem"><a
+                href="https://technical.ly/software-development/vistar-medias-tech-stack-not-faint-heart/"
+                class="hoverable-text underlineDots">Vistar's tech stack is not for the faint-of-heart</a>, and I
+              learned so much as a new grad.</p>
+          </div>
+          <div>
+            <h2 class="fs-3rem m_fs-2rem "><a href="https://www.jpmorganchase.com/"
+                class="hoverable-text underlineDots" target="_blank">JP Morgan Chase & Co.</a>
+            </h2>
+            <p class="fs-1.5rem m_fs-1rem">I was a software engineer intern at JPMC during the summer of 2018. I was
+              assigned a solo project to create a web application for some internal tooling.</p>
+            <p class="fs-1.5rem m_fs-1rem">My time at JPMC was wonderful, but it taught me I prefer the freedom of
+              startups versus the red tape of large firms.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="contact" class="w-70% m_w-75%">
+      <h1 class="fs-5rem m_fs-3rem">Get in touch</h1>
+      <div class="flex gap-4rem m_column m_gap-1rem w-100%">
+        <div class="maxw-100%">
+          <h2 class="fs-3rem m_fs-2rem">Email</h2>
+          <p class="fs-1.5rem">cbouwense@proton.me</p>
+        </div>
+        <div class="maxw-100%">
+          <h2 class="fs-3rem m_fs-2rem">LinkedIn</h2>
+          <p class="fs-1.5rem"><a target="_blank" href="https://www.linkedin.com/in/christian-bouwense/"
+              class="hoverable-text underlineDots wrap">linkedin.com/in/christianbouwense</a></p>
+        </div>
+        <div class="maxw-100%">
+          <h2 class="fs-3rem m_fs-2rem">GitHub</h2>
+          <p class="fs-1.5rem"><a target="_blank" href="https://github.com/cbouwense"
+              class="hoverable-text underlineDots">github.com/cbouwense</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+
 </html>

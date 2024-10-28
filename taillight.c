@@ -1,238 +1,25 @@
 #include "guppy.h"
 
-#define KEY_VAL(key_val_pair) \
+#define KEY_VAL_LITERAL(key_val_pair) \
     do {\
-        if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "  ");\
-        gup_string_append_cstr_arena(a, &taillight_rule, "  ");\
-        gup_string_append_cstr_arena(a, &taillight_rule, key_val_pair);\
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");\
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n");\
+        if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
+        gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
+        gup_string_append_cstr_arena(&a, &taillight_rule, key_val_pair);\
+        if (is_important) gup_string_append_cstr_arena(&a, &taillight_rule, " !important");\
+        gup_string_append_cstr_arena(&a, &taillight_rule, ";\n");\
     } while (0)
 
 #define KEY_WITH_PARSED_VAL(key) \
     do {\
-        if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "  ");\
-        gup_string_append_cstr_arena(a, &taillight_rule, "  ");\
-        gup_string_append_cstr_arena(a, &taillight_rule, key);\
-        gup_string_append_cstr_arena(a, &taillight_rule, ": ");\
-        gup_string_append_str_arena(a, &taillight_rule, value_and_units);\
-        if (is_important) gup_string_append_cstr_arena(a, &taillight_rule, " !important");\
-        gup_string_append_cstr_arena(a, &taillight_rule, ";\n");\
+        if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
+        gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
+        gup_string_append_cstr_arena(&a, &taillight_rule, key);\
+        gup_string_append_cstr_arena(&a, &taillight_rule, ": ");\
+        gup_string_append_str_arena(&a, &taillight_rule, value_and_units);\
+        if (is_important) gup_string_append_cstr_arena(&a, &taillight_rule, " !important");\
+        gup_string_append_cstr_arena(&a, &taillight_rule, ";\n");\
     } while (0)
 
-// "m_w-100rem!" -> ".w-100rem\! { width: 100rem !important; }:
-GupString generate_rule(GupArena *a, GupString raw_rule) {
-    GupString taillight_rule = gup_string_create_arena(a);
-
-    // "m_w-100rem!":
-    // namespace        = "m"
-    // abbreviated_name = "w"
-    // value_and_units  = "100rem"
-    // has_namespace    = true
-    // is_important     = true
-    GupArrayString tokens = gup_string_split_arena(a, raw_rule, '-');
-
-    GupArrayString name_and_namespace_as_tokens = gup_string_split_arena(a, tokens.data[0], '_');
-    bool has_namespace = name_and_namespace_as_tokens.count == 2;
-    GupString abbreviated_name = has_namespace
-        ? name_and_namespace_as_tokens.data[1]
-        : name_and_namespace_as_tokens.data[0];
-
-    bool is_important = false;
-    GupString value_and_units = tokens.count > 1
-        ? gup_string_copy_arena(a, tokens.data[1])
-        : (GupString) {0};
-    gup_string_trim_char_in_place(&value_and_units, '!');
-
-    GupString taillight_class = gup_string_create_arena(a);
-    for (int i = 0; i < raw_rule.count; i++) {
-        switch (raw_rule.data[i]) {
-            case '!': {
-                gup_string_append_cstr_arena(a, &taillight_class, "\\!");
-                is_important = true;
-                break;
-            }
-            case '%': {
-                gup_string_append_cstr_arena(a, &taillight_class, "\\%");
-                break;
-            }
-            case '.': {
-                gup_string_append_cstr_arena(a, &taillight_class, "\\.");
-                break;
-            }
-            default: {
-                gup_string_append_arena(a, &taillight_class, raw_rule.data[i]);
-                break;
-            }
-        }
-    }
-
-    // ".w-100rem { "
-    if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "  ");
-    gup_string_append_arena(a, &taillight_rule, '.');
-    gup_string_append_str_arena(a, &taillight_rule, taillight_class);
-    gup_string_append_cstr_arena(a, &taillight_rule, " {\n");
-
-    if (gup_string_eq_cstr(abbreviated_name, "absolute")) {
-        KEY_VAL("position: absolute");
-    } else if (gup_string_eq_cstr(abbreviated_name, "alignStart")) {
-        KEY_VAL("align-items: flex-start");
-    } else if (gup_string_eq_cstr(abbreviated_name, "alignEnd")) {
-        KEY_VAL("align-items: flex-end");
-    } else if (gup_string_eq_cstr(abbreviated_name, "alignCenter")) {
-        KEY_VAL("align-items: center");
-    } else if (gup_string_eq_cstr(abbreviated_name, "alignBaseline")) {
-        KEY_VAL("align-items: baseline");
-    } else if (gup_string_eq_cstr(abbreviated_name, "alignStretch")) {
-        KEY_VAL("align-items: stretch");
-    } else if (gup_string_eq_cstr(abbreviated_name, "b")) { // TODO: border is a strange one, it has such variable values, not sure how to process it yet.
-        KEY_WITH_PARSED_VAL("border");
-    } else if (gup_string_eq_cstr(abbreviated_name, "bb")) {
-        KEY_WITH_PARSED_VAL("border-bottom");
-    } else if (gup_string_eq_cstr(abbreviated_name, "bg")) {
-        if (gup_string_eq_cstr(value_and_units, "default")) {
-            KEY_VAL("background-color: var(--background-color)");
-        } else {
-            KEY_WITH_PARSED_VAL("background-color");
-        }
-    } else if (gup_string_eq_cstr(abbreviated_name, "bl")) {
-        KEY_WITH_PARSED_VAL("border-left");
-    } else if (gup_string_eq_cstr(abbreviated_name, "br")) {
-        KEY_WITH_PARSED_VAL("border-right");
-    } else if (gup_string_eq_cstr(abbreviated_name, "brad")) {
-        KEY_WITH_PARSED_VAL("border-radius");
-    } else if (gup_string_eq_cstr(abbreviated_name, "bt")) {
-        KEY_WITH_PARSED_VAL("border-top");
-    } else if (gup_string_eq_cstr(abbreviated_name, "bottom")) {
-        KEY_WITH_PARSED_VAL("bottom");
-    } else if (gup_string_eq_cstr(abbreviated_name, "bx")) {
-        KEY_WITH_PARSED_VAL("border-left");
-        KEY_WITH_PARSED_VAL("border-right");
-    } else if (gup_string_eq_cstr(abbreviated_name, "by")) {
-        KEY_WITH_PARSED_VAL("border-top");
-        KEY_WITH_PARSED_VAL("border-bottom");
-    } else if (gup_string_eq_cstr(abbreviated_name, "c")) {
-        KEY_WITH_PARSED_VAL("color");
-    } else if (gup_string_eq_cstr(abbreviated_name, "column")) {
-        KEY_VAL("flex-direction: column");
-    } else if (gup_string_eq_cstr(abbreviated_name, "dot")) {
-        KEY_VAL("list-style-type: disc");
-        KEY_VAL("margin-left: 1.5rem");
-    } else if (gup_string_eq_cstr(abbreviated_name, "fixed")) {
-        KEY_VAL("position: fixed");
-    } else if (gup_string_eq_cstr(abbreviated_name, "flex")) {
-        KEY_VAL("display: flex");
-    } else if (gup_string_eq_cstr(abbreviated_name, "fs")) {
-        KEY_WITH_PARSED_VAL("font-size");
-    } else if (gup_string_eq_cstr(abbreviated_name, "gap")) {
-        KEY_WITH_PARSED_VAL("gap");
-    } else if (gup_string_eq_cstr(abbreviated_name, "h")) {
-        KEY_WITH_PARSED_VAL("height");
-    } else if (gup_string_eq_cstr(abbreviated_name, "hoverable")) { // TODO: macro for multi rule rules
-        KEY_VAL("color: var(--text-primary-color)");
-        KEY_VAL("transition: color 0.25s ease");
-        gup_string_append_cstr_arena(a, &taillight_rule, "}\n");
-
-        // .hoverable:hover {
-        //   color: var(--text-secondary-color);
-        // }
-        gup_string_append_cstr_arena(a, &taillight_rule, ".hoverable:hover {\n");
-        KEY_VAL("  color: var(--text-secondary-color)");
-    } else if (gup_string_eq_cstr(abbreviated_name, "justifyStart")) {
-        KEY_VAL("justify-content: flex-start");
-    } else if (gup_string_eq_cstr(abbreviated_name, "justifyEnd")) {
-        KEY_VAL("justify-content: flex-end");
-    } else if (gup_string_eq_cstr(abbreviated_name, "justifyCenter")) {
-        KEY_VAL("justify-content: center");
-    } else if (gup_string_eq_cstr(abbreviated_name, "justifyBetween")) {
-        KEY_VAL("justify-content: space-between");
-    } else if (gup_string_eq_cstr(abbreviated_name, "justifyAround")) {
-        KEY_VAL("justify-content: space-around");
-    } else if (gup_string_eq_cstr(abbreviated_name, "justifyEvenly")) {
-        KEY_VAL("justify-content: space-evenly");
-    } else if (gup_string_eq_cstr(abbreviated_name, "justifyStretch")) {
-        KEY_VAL("justify-content: stretch");
-    } else if (gup_string_eq_cstr(abbreviated_name, "left")) {
-        KEY_WITH_PARSED_VAL("left");
-    } else if (gup_string_eq_cstr(abbreviated_name, "m")) {
-        KEY_WITH_PARSED_VAL("margin");
-    } else if (gup_string_eq_cstr(abbreviated_name, "maxh")) {
-        KEY_WITH_PARSED_VAL("max-height");
-    } else if (gup_string_eq_cstr(abbreviated_name, "maxw")) {
-        KEY_WITH_PARSED_VAL("max-width");
-    } else if (gup_string_eq_cstr(abbreviated_name, "mb")) {
-        KEY_WITH_PARSED_VAL("margin-bottom");
-    } else if (gup_string_eq_cstr(abbreviated_name, "minh")) {
-        KEY_WITH_PARSED_VAL("min-height");
-    } else if (gup_string_eq_cstr(abbreviated_name, "minw")) {
-        KEY_WITH_PARSED_VAL("min-width");
-    } else if (gup_string_eq_cstr(abbreviated_name, "ml")) {
-        KEY_WITH_PARSED_VAL("margin-left");
-    } else if (gup_string_eq_cstr(abbreviated_name, "mr")) {
-        KEY_WITH_PARSED_VAL("margin-right");
-    } else if (gup_string_eq_cstr(abbreviated_name, "mt")) {
-        KEY_WITH_PARSED_VAL("margin-top");
-    } else if (gup_string_eq_cstr(abbreviated_name, "mx")) {
-        KEY_WITH_PARSED_VAL("margin-left");
-        KEY_WITH_PARSED_VAL("margin-right");
-    } else if (gup_string_eq_cstr(abbreviated_name, "my")) {
-        KEY_WITH_PARSED_VAL("margin-top");
-        KEY_WITH_PARSED_VAL("margin-bottom");
-    } else if (gup_string_eq_cstr(abbreviated_name, "p")) {
-        KEY_WITH_PARSED_VAL("padding");
-    } else if (gup_string_eq_cstr(abbreviated_name, "pb")) {
-        KEY_WITH_PARSED_VAL("padding-bottom");
-    } else if (gup_string_eq_cstr(abbreviated_name, "pl")) {
-        KEY_WITH_PARSED_VAL("padding-left");
-    } else if (gup_string_eq_cstr(abbreviated_name, "pr")) {
-        KEY_WITH_PARSED_VAL("padding-right");
-    } else if (gup_string_eq_cstr(abbreviated_name, "pt")) {
-        KEY_WITH_PARSED_VAL("padding-top");
-    } else if (gup_string_eq_cstr(abbreviated_name, "px")) {
-        KEY_WITH_PARSED_VAL("padding-left");
-        KEY_WITH_PARSED_VAL("padding-right");
-    } else if (gup_string_eq_cstr(abbreviated_name, "py")) {
-        KEY_WITH_PARSED_VAL("padding-top");
-        KEY_WITH_PARSED_VAL("padding-bottom");
-    } else if (gup_string_eq_cstr(abbreviated_name, "right")) {
-        KEY_WITH_PARSED_VAL("right");
-    } else if (gup_string_eq_cstr(abbreviated_name, "relative")) {
-        KEY_VAL("position: relative");
-    } else if (gup_string_eq_cstr(abbreviated_name, "row")) {
-        KEY_VAL("flex-direction: row");
-    } else if (gup_string_eq_cstr(abbreviated_name, "shadowSm")) { 
-        KEY_VAL("box-shadow: 0 1px 2px 0 rgb(0, 0, 0, 0.05)");
-    } else if (gup_string_eq_cstr(abbreviated_name, "shadow")) { 
-        KEY_VAL("box-shadow: 0 1px 3px 0 rgb(0, 0, 0, 0.1), 0 1px 2px -1px rgb(0, 0, 0, 0.1)");
-    } else if (gup_string_eq_cstr(abbreviated_name, "shadowMd")) { 
-        KEY_VAL("box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.1), 0 2px 4px -2px rgb(0, 0, 0, 0.1)");
-    } else if (gup_string_eq_cstr(abbreviated_name, "shadowLg")) { 
-        KEY_VAL("box-shadow: 0 10px 15px -3px rgb(0, 0, 0, 0.1), 0 4px 6px -4px rgb(0, 0, 0, 0.1)");
-    } else if (gup_string_eq_cstr(abbreviated_name, "shadowXl")) { 
-        KEY_VAL("box-shadow: 0 20px 25px -5px rgb(0, 0, 0, 0.1), 0 8px 10px -6px rgb(0, 0, 0, 0.1)");
-    } else if (gup_string_eq_cstr(abbreviated_name, "shadowXxl")) {
-        KEY_VAL("box-shadow: 0 25px 50px -12px rgb(0, 0, 0, 0.25)");
-    } else if (gup_string_eq_cstr(abbreviated_name, "shadowInner")) { 
-        KEY_VAL("box-shadow: inset 0 2px 4px 0 rgb(0, 0, 0, 0.05)");
-    } else if (gup_string_eq_cstr(abbreviated_name, "shadowNone")) { 
-        KEY_VAL("box-shadow: 0 0 #0000");
-    } else if (gup_string_eq_cstr(abbreviated_name, "top")) {
-        KEY_WITH_PARSED_VAL("top");
-    } else if (gup_string_eq_cstr(abbreviated_name, "w")) {
-        KEY_WITH_PARSED_VAL("width");
-    } else if (gup_string_eq_cstr(abbreviated_name, "z")) {
-        KEY_WITH_PARSED_VAL("z-index");
-    } else {
-        printf("WARNING: Unable to parse the following class name:\n");
-        gup_string_print(abbreviated_name);
-        printf("Either taillight does not support that key, you misspelled it, or there is a bug in taillight.\n");
-    }
-
-    if (has_namespace) gup_string_append_cstr_arena(a, &taillight_rule, "  ");
-    gup_string_append_cstr_arena(a, &taillight_rule, "}");
-
-    return taillight_rule;
-}
 
 int main(int argc, char **argv) {
     char *html_file_path = (argc > 1) ? argv[1] : "index.html";
@@ -278,6 +65,7 @@ int main(int argc, char **argv) {
     GupArrayString tablet_namespace_rules = gup_array_string_create_arena(&a);
     GupArrayString computer_namespace_rules = gup_array_string_create_arena(&a);
     GupArrayString ultrawide_namespace_rules = gup_array_string_create_arena(&a);
+    GupArrayString unknown_rules = gup_array_string_create_arena(&a);
     // Write the boilerplate to the final css file
     // TODO: no boilerplate option
     {
@@ -318,7 +106,235 @@ int main(int argc, char **argv) {
     // Generate the taillight rules from the parsed html rules
     for (int i = 0; i < html_rules.count; i++) {
         GupString html_rule = html_rules.data[i];
-        GupString taillight_rule = generate_rule(&a, html_rule);
+        GupString taillight_rule = gup_string_create_arena(&a);
+        // Generate rule for this html rule
+        {
+            GupArrayString tokens = gup_string_split_arena(&a, html_rule, '-');
+
+            GupArrayString name_and_namespace_as_tokens = gup_string_split_arena(&a, tokens.data[0], '_');
+            bool has_namespace = name_and_namespace_as_tokens.count == 2;
+            GupString abbreviated_name = has_namespace
+                ? name_and_namespace_as_tokens.data[1]
+                : name_and_namespace_as_tokens.data[0];
+
+            bool is_important = false;
+            GupString value_and_units = tokens.count > 1
+                ? gup_string_copy_arena(&a, tokens.data[1])
+                : (GupString) {0};
+            gup_string_trim_char_in_place(&value_and_units, '!');
+
+            GupString taillight_class = gup_string_create_arena(&a);
+            for (int i = 0; i < html_rule.count; i++) {
+                switch (html_rule.data[i]) {
+                    case '!': {
+                        gup_string_append_cstr_arena(&a, &taillight_class, "\\!");
+                        is_important = true;
+                        break;
+                    }
+                    case '%': {
+                        gup_string_append_cstr_arena(&a, &taillight_class, "\\%");
+                        break;
+                    }
+                    case '.': {
+                        gup_string_append_cstr_arena(&a, &taillight_class, "\\.");
+                        break;
+                    }
+                    default: {
+                        gup_string_append_arena(&a, &taillight_class, html_rule.data[i]);
+                        break;
+                    }
+                }
+            }
+
+            // These keywords are used by the media queries and don't need anything to be auto generated for them.
+            if (
+                gup_string_eq_cstr(html_rule, "mobile")   ||
+                gup_string_eq_cstr(html_rule, "tablet")   ||
+                gup_string_eq_cstr(html_rule, "computer") ||
+                gup_string_eq_cstr(html_rule, "ultrawide")
+            ) {
+                continue;
+            }
+
+            if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");
+            gup_string_append_arena(&a, &taillight_rule, '.');
+            gup_string_append_str_arena(&a, &taillight_rule, taillight_class);
+            gup_string_append_cstr_arena(&a, &taillight_rule, " {\n");
+
+            if (gup_string_eq_cstr(abbreviated_name, "absolute")) {
+                KEY_VAL_LITERAL("position: absolute");
+            } else if (gup_string_eq_cstr(abbreviated_name, "alignStart")) {
+                KEY_VAL_LITERAL("align-items: flex-start");
+            } else if (gup_string_eq_cstr(abbreviated_name, "alignEnd")) {
+                KEY_VAL_LITERAL("align-items: flex-end");
+            } else if (gup_string_eq_cstr(abbreviated_name, "alignCenter")) {
+                KEY_VAL_LITERAL("align-items: center");
+            } else if (gup_string_eq_cstr(abbreviated_name, "alignBaseline")) {
+                KEY_VAL_LITERAL("align-items: baseline");
+            } else if (gup_string_eq_cstr(abbreviated_name, "alignStretch")) {
+                KEY_VAL_LITERAL("align-items: stretch");
+            } else if (gup_string_eq_cstr(abbreviated_name, "b")) { // TODO: border is a strange one, it has such variable values, not sure how to process it yet.
+                KEY_WITH_PARSED_VAL("border");
+            } else if (gup_string_eq_cstr(abbreviated_name, "bb")) {
+                KEY_WITH_PARSED_VAL("border-bottom");
+            } else if (gup_string_eq_cstr(abbreviated_name, "bg")) {
+                if (gup_string_eq_cstr(value_and_units, "default")) {
+                    KEY_VAL_LITERAL("background-color: var(--background-color)");
+                } else {
+                    KEY_WITH_PARSED_VAL("background-color");
+                }
+            } else if (gup_string_eq_cstr(abbreviated_name, "bl")) {
+                KEY_WITH_PARSED_VAL("border-left");
+            } else if (gup_string_eq_cstr(abbreviated_name, "br")) {
+                KEY_WITH_PARSED_VAL("border-right");
+            } else if (gup_string_eq_cstr(abbreviated_name, "brad")) {
+                KEY_WITH_PARSED_VAL("border-radius");
+            } else if (gup_string_eq_cstr(abbreviated_name, "bt")) {
+                KEY_WITH_PARSED_VAL("border-top");
+            } else if (gup_string_eq_cstr(abbreviated_name, "bottom")) {
+                KEY_WITH_PARSED_VAL("bottom");
+            } else if (gup_string_eq_cstr(abbreviated_name, "bx")) {
+                KEY_WITH_PARSED_VAL("border-left");
+                KEY_WITH_PARSED_VAL("border-right");
+            } else if (gup_string_eq_cstr(abbreviated_name, "by")) {
+                KEY_WITH_PARSED_VAL("border-top");
+                KEY_WITH_PARSED_VAL("border-bottom");
+            } else if (gup_string_eq_cstr(abbreviated_name, "c")) {
+                KEY_WITH_PARSED_VAL("color");
+            } else if (gup_string_eq_cstr(abbreviated_name, "column")) {
+                KEY_VAL_LITERAL("flex-direction: column");
+            } else if (gup_string_eq_cstr(abbreviated_name, "dot")) {
+                KEY_VAL_LITERAL("list-style-type: disc");
+                KEY_VAL_LITERAL("margin-left: 1.5rem");
+            } else if (gup_string_eq_cstr(abbreviated_name, "fixed")) {
+                KEY_VAL_LITERAL("position: fixed");
+            } else if (gup_string_eq_cstr(abbreviated_name, "flex")) {
+                KEY_VAL_LITERAL("display: flex");
+            } else if (gup_string_eq_cstr(abbreviated_name, "fs")) {
+                KEY_WITH_PARSED_VAL("font-size");
+            } else if (gup_string_eq_cstr(abbreviated_name, "gap")) {
+                KEY_WITH_PARSED_VAL("gap");
+            } else if (gup_string_eq_cstr(abbreviated_name, "grid")) {
+                KEY_VAL_LITERAL("display: grid");
+            } else if (gup_string_eq_cstr(abbreviated_name, "h")) {
+                KEY_WITH_PARSED_VAL("height");
+            } else if (gup_string_eq_cstr(abbreviated_name, "hoverable")) { // TODO: macro for multi rule rules
+                KEY_VAL_LITERAL("color: var(--text-primary-color)");
+                KEY_VAL_LITERAL("transition: color 0.25s ease");
+                gup_string_append_cstr_arena(&a, &taillight_rule, "}\n");
+
+                // .hoverable:hover {
+                //   color: var(--text-secondary-color);
+                // }
+                gup_string_append_cstr_arena(&a, &taillight_rule, ".hoverable:hover {\n");
+                KEY_VAL_LITERAL("  color: var(--text-secondary-color)");
+            } else if (gup_string_eq_cstr(abbreviated_name, "justifyStart")) {
+                KEY_VAL_LITERAL("justify-content: flex-start");
+            } else if (gup_string_eq_cstr(abbreviated_name, "justifyEnd")) {
+                KEY_VAL_LITERAL("justify-content: flex-end");
+            } else if (gup_string_eq_cstr(abbreviated_name, "justifyCenter")) {
+                KEY_VAL_LITERAL("justify-content: center");
+            } else if (gup_string_eq_cstr(abbreviated_name, "justifyBetween")) {
+                KEY_VAL_LITERAL("justify-content: space-between");
+            } else if (gup_string_eq_cstr(abbreviated_name, "justifyAround")) {
+                KEY_VAL_LITERAL("justify-content: space-around");
+            } else if (gup_string_eq_cstr(abbreviated_name, "justifyEvenly")) {
+                KEY_VAL_LITERAL("justify-content: space-evenly");
+            } else if (gup_string_eq_cstr(abbreviated_name, "justifyStretch")) {
+                KEY_VAL_LITERAL("justify-content: stretch");
+            } else if (gup_string_eq_cstr(abbreviated_name, "left")) {
+                KEY_WITH_PARSED_VAL("left");
+            } else if (gup_string_eq_cstr(abbreviated_name, "lightShadow")) {
+                KEY_VAL_LITERAL("box-shadow: 0 0 16px 0 rgba(255, 255, 255, 0.2)");
+            } else if (gup_string_eq_cstr(abbreviated_name, "lightShadowSmall")) {
+                KEY_VAL_LITERAL("box-shadow: 0 0 8px 0 rgba(255, 255, 255, 0.2)");
+            } else if (gup_string_eq_cstr(abbreviated_name, "m")) {
+                KEY_WITH_PARSED_VAL("margin");
+            } else if (gup_string_eq_cstr(abbreviated_name, "maxh")) {
+                KEY_WITH_PARSED_VAL("max-height");
+            } else if (gup_string_eq_cstr(abbreviated_name, "maxw")) {
+                KEY_WITH_PARSED_VAL("max-width");
+            } else if (gup_string_eq_cstr(abbreviated_name, "mb")) {
+                KEY_WITH_PARSED_VAL("margin-bottom");
+            } else if (gup_string_eq_cstr(abbreviated_name, "minh")) {
+                KEY_WITH_PARSED_VAL("min-height");
+            } else if (gup_string_eq_cstr(abbreviated_name, "minw")) {
+                KEY_WITH_PARSED_VAL("min-width");
+            } else if (gup_string_eq_cstr(abbreviated_name, "ml")) {
+                KEY_WITH_PARSED_VAL("margin-left");
+            } else if (gup_string_eq_cstr(abbreviated_name, "mr")) {
+                KEY_WITH_PARSED_VAL("margin-right");
+            } else if (gup_string_eq_cstr(abbreviated_name, "mt")) {
+                KEY_WITH_PARSED_VAL("margin-top");
+            } else if (gup_string_eq_cstr(abbreviated_name, "mx")) {
+                KEY_WITH_PARSED_VAL("margin-left");
+                KEY_WITH_PARSED_VAL("margin-right");
+            } else if (gup_string_eq_cstr(abbreviated_name, "my")) {
+                KEY_WITH_PARSED_VAL("margin-top");
+                KEY_WITH_PARSED_VAL("margin-bottom");
+            } else if (gup_string_eq_cstr(abbreviated_name, "p")) {
+                KEY_WITH_PARSED_VAL("padding");
+            } else if (gup_string_eq_cstr(abbreviated_name, "pb")) {
+                KEY_WITH_PARSED_VAL("padding-bottom");
+            } else if (gup_string_eq_cstr(abbreviated_name, "pl")) {
+                KEY_WITH_PARSED_VAL("padding-left");
+            } else if (gup_string_eq_cstr(abbreviated_name, "pr")) {
+                KEY_WITH_PARSED_VAL("padding-right");
+            } else if (gup_string_eq_cstr(abbreviated_name, "pt")) {
+                KEY_WITH_PARSED_VAL("padding-top");
+            } else if (gup_string_eq_cstr(abbreviated_name, "px")) {
+                KEY_WITH_PARSED_VAL("padding-left");
+                KEY_WITH_PARSED_VAL("padding-right");
+            } else if (gup_string_eq_cstr(abbreviated_name, "py")) {
+                KEY_WITH_PARSED_VAL("padding-top");
+                KEY_WITH_PARSED_VAL("padding-bottom");
+            } else if (gup_string_eq_cstr(abbreviated_name, "right")) {
+                KEY_WITH_PARSED_VAL("right");
+            } else if (gup_string_eq_cstr(abbreviated_name, "relative")) {
+                KEY_VAL_LITERAL("position: relative");
+            } else if (gup_string_eq_cstr(abbreviated_name, "rounded")) {
+                KEY_VAL_LITERAL("border-radius: 8px;");
+            } else if (gup_string_eq_cstr(abbreviated_name, "row")) {
+                KEY_VAL_LITERAL("flex-direction: row");
+            } else if (gup_string_eq_cstr(abbreviated_name, "shadowSm")) { 
+                KEY_VAL_LITERAL("box-shadow: 0 1px 2px 0 rgb(0, 0, 0, 0.05)");
+            } else if (gup_string_eq_cstr(abbreviated_name, "shadow")) { 
+                KEY_VAL_LITERAL("box-shadow: 0 1px 3px 0 rgb(0, 0, 0, 0.1), 0 1px 2px -1px rgb(0, 0, 0, 0.1)");
+            } else if (gup_string_eq_cstr(abbreviated_name, "shadowMd")) { 
+                KEY_VAL_LITERAL("box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.1), 0 2px 4px -2px rgb(0, 0, 0, 0.1)");
+            } else if (gup_string_eq_cstr(abbreviated_name, "shadowLg")) { 
+                KEY_VAL_LITERAL("box-shadow: 0 10px 15px -3px rgb(0, 0, 0, 0.1), 0 4px 6px -4px rgb(0, 0, 0, 0.1)");
+            } else if (gup_string_eq_cstr(abbreviated_name, "shadowXl")) { 
+                KEY_VAL_LITERAL("box-shadow: 0 20px 25px -5px rgb(0, 0, 0, 0.1), 0 8px 10px -6px rgb(0, 0, 0, 0.1)");
+            } else if (gup_string_eq_cstr(abbreviated_name, "shadowXxl")) {
+                KEY_VAL_LITERAL("box-shadow: 0 25px 50px -12px rgb(0, 0, 0, 0.25)");
+            } else if (gup_string_eq_cstr(abbreviated_name, "shadowInner")) { 
+                KEY_VAL_LITERAL("box-shadow: inset 0 2px 4px 0 rgb(0, 0, 0, 0.05)");
+            } else if (gup_string_eq_cstr(abbreviated_name, "shadowNone")) { 
+                KEY_VAL_LITERAL("box-shadow: 0 0 #0000");
+            } else if (gup_string_eq_cstr(abbreviated_name, "sticky")) {
+                KEY_VAL_LITERAL("position: sticky");
+                KEY_VAL_LITERAL("top: 0");
+                KEY_VAL_LITERAL("box-sizing: border-box");
+            } else if (gup_string_eq_cstr(abbreviated_name, "top")) {
+                KEY_WITH_PARSED_VAL("top");
+            } else if (gup_string_eq_cstr(abbreviated_name, "underlineDots")) {
+                KEY_VAL_LITERAL("text-decoration: underline dotted");
+            } else if (gup_string_eq_cstr(abbreviated_name, "w")) {
+                KEY_WITH_PARSED_VAL("width");
+            } else if (gup_string_eq_cstr(abbreviated_name, "wrap")) {
+                KEY_VAL_LITERAL("word-wrap: break-word");
+            } else if (gup_string_eq_cstr(abbreviated_name, "z")) {
+                KEY_WITH_PARSED_VAL("z-index");
+            } else {
+                if (!gup_array_string_contains(unknown_rules, html_rule)) {
+                    gup_array_string_append_arena(&a, &unknown_rules, html_rule);
+                }
+            }
+
+            if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");
+            gup_string_append_cstr_arena(&a, &taillight_rule, "}");
+        }
         
         // TODO: using Sets would be better instead of manually checking whether they're already contained, I'd guess 
         if (gup_string_starts_with_cstr(html_rule, "m_")) {
@@ -341,16 +357,13 @@ int main(int argc, char **argv) {
             gup_array_string_append_arena(&a, &no_namespace_rules, taillight_rule);
         }
     }
+
+    printf("WARNING: Taillight found the following class names but didn't recognize them. These are probably just custom classes you have, but you might want to check out this list just in case:\n");
+    gup_array_string_print(unknown_rules);
     printf("Successfully generated taillight rules.\n");
 
     // Write the lines to the final css file 
     printf("Writing taillight rules to %s...\n", css_file_path);
-    
-    gup_array_string_print(no_namespace_rules);
-    gup_array_string_print(mobile_namespace_rules);
-    gup_array_string_print(tablet_namespace_rules);
-    gup_array_string_print(computer_namespace_rules);
-    gup_array_string_print(ultrawide_namespace_rules);
 
     // NOTE: Writing this first line is actually a sort of hack to make sure we can append everything afterwards
     // but still be overwriting any old file that might be there. 
@@ -406,6 +419,7 @@ int main(int argc, char **argv) {
     }
 
     printf("Successfully wrote taillight rules to %s.\n", css_file_path);
+
     printf("All done, hope it looks good!\n");
 
     gup_arena_destroy(a);

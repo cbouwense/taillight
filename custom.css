@@ -1,0 +1,13 @@
+.light-text {
+    font-family: "Libre Baskerville", serif;
+    font-weight: 200;
+    font-style: normal;
+}
+
+.skill-bar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 0.25rem;
+    border-radius: 0.5rem;
+}
