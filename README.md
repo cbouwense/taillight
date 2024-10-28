@@ -15,7 +15,7 @@ make
 
 index.html
 ```html
-<main class="w-100% c_w-75% bg-#181818">
+<main class="w-100% uw_w-75% bg-#181818">
   <div class="flex gap-1rem">
     <span>one</span>
     <span>two</span>
@@ -28,11 +28,10 @@ index.html
 
 taillight.css
 ```css
-/* Not pictured: some boilerplate styles that taillight also gives you */
 .w-100\% {
   width: 100%;
 }
-.bg-#181818 {
+.bg-\#181818 {
   background-color: #181818;
 }
 .flex {
@@ -41,8 +40,14 @@ taillight.css
 .gap-1rem {
   gap: 1rem;
 }
-/* Media query boilerplate */
+/* Ultrawide */
+@media (min-width: 3886px) {
+  .uw_w-75\% {
+    width: 75%;
+  }
+}
 ```
+(ommitted some default styles for clarity)
 
 ## Compile and Run
 
