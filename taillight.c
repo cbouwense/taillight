@@ -71,43 +71,7 @@ int main(int argc, char **argv) {
     GupArrayString computer_namespace_rules = gup_array_string_create_arena(&a);
     GupArrayString ultrawide_namespace_rules = gup_array_string_create_arena(&a);
     GupArrayString unknown_rules = gup_array_string_create_arena(&a);
-    // Write the boilerplate to the final css file
-    // TODO: no boilerplate option
-    {
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "* { box-sizing: border-box; }");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, ":root {");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  font-size: 16px;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  --text-primary-color: whitesmoke;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  --text-secondary-color: gray;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  color: var(--text-primary-color);");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  --background-color: rgba(18, 18, 18);");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  --primary-color: blue;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  --secondary-color: #2a2a2a;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "}");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "html {");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  scroll-behavior: smooth;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  scroll-padding-top: 2rem;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "}");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "a {");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  color: inherit;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  text-decoration: none;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "}");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "body {");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  background-color: var(--background-color);");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  font-family: \"Libre Baskerville\", serif;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  font-weight: 400;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "  font-style: normal;");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "}");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "li { list-style-type: none; }");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "ul { padding-left: 0; }");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "h1 { font-size: 3rem; }");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "h2 { font-size: 2rem; }");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "h3 { font-size: 1.5rem; }");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "h4 { font-size: 1rem; }");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "h5 { font-size: 0.75rem; }");
-        gup_array_string_append_cstr_arena(&a, &no_namespace_rules, "h6 { font-size: 0.5rem; }\n");
-    }
-
+    
     // Generate the taillight rules from the parsed html rules
     for (int i = 0; i < html_rules.count; i++) {
         GupString html_rule = html_rules.data[i];
