@@ -1,136 +1,137 @@
 #include "guppy.h"
 
-#define ADD_CLASSNAME(classname) \
-    if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
-    gup_string_append_arena(&a, &taillight_rule, '.');\
-    gup_string_append_str_arena(&a, &taillight_rule, classname);\
-    gup_string_append_cstr_arena(&a, &taillight_rule, " {\n");
-
 #define ADD_KEY_VALUE_LITERAL(key_val_pair) \
-    do {\
-        if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
-        gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
-        gup_string_append_cstr_arena(&a, &taillight_rule, key_val_pair);\
-        if (is_important) gup_string_append_cstr_arena(&a, &taillight_rule, " !important");\
-        gup_string_append_cstr_arena(&a, &taillight_rule, ";\n");\
-    } while (0)
+  do {\
+      if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
+      gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
+      gup_string_append_cstr_arena(&a, &taillight_rule, key_val_pair);\
+      if (is_important) gup_string_append_cstr_arena(&a, &taillight_rule, " !important");\
+      gup_string_append_cstr_arena(&a, &taillight_rule, ";\n");\
+  } while (0)
 
 #define ADD_KEY_WITH_PARSED_VALUE(key) \
-    do {\
-        if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
-        gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
-        gup_string_append_cstr_arena(&a, &taillight_rule, key);\
-        gup_string_append_cstr_arena(&a, &taillight_rule, ": ");\
-        gup_string_append_str_arena(&a, &taillight_rule, value_and_units);\
-        if (is_important) gup_string_append_cstr_arena(&a, &taillight_rule, " !important");\
-        gup_string_append_cstr_arena(&a, &taillight_rule, ";\n");\
-    } while (0)
+  do {\
+      if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
+      gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
+      gup_string_append_cstr_arena(&a, &taillight_rule, key);\
+      gup_string_append_cstr_arena(&a, &taillight_rule, ": ");\
+      gup_string_append_str_arena(&a, &taillight_rule, value_and_units);\
+      if (is_important) gup_string_append_cstr_arena(&a, &taillight_rule, " !important");\
+      gup_string_append_cstr_arena(&a, &taillight_rule, ";\n");\
+  } while (0)
 
 int main(int argc, char **argv) {
-    char *html_file_path = (argc > 1) ? argv[1] : "index.html";
-    char *css_file_path = (argc > 2) ? argv[2] : "taillight.css";
+  char *html_file_path = (argc > 1) ? argv[1] : "index.html";
+  char *css_file_path = (argc > 2) ? argv[2] : "taillight.css";
 
-    GupArena a = gup_arena_create();
+  GupArena a = gup_arena_create();
 
-    // Scrape the raw rules from the HTML
-    printf("Parsing %s...\n", html_file_path);
-    GupString html = gup_file_read_arena(&a, html_file_path);
-    GupArrayString html_rules = gup_array_string_create_arena(&a);
-    for (int i = 0; i < html.count - 7; i++) {
-        GupString view = {
-            .data = &html.data[i],
-            .count = 7,
-            .capacity = 7
-        };
-        if (gup_string_eq_cstr(view, "class=\"")) {
-            i += 7;
-            int j = i;
-            while (html.data[j] != '"') {
-                j++;
-            }
+  // Scrape the raw rules from the HTML
+  printf("Parsing %s...\n", html_file_path);
+  GupString html = gup_file_read_arena(&a, html_file_path);
+  GupArrayString html_rules = gup_array_string_create_arena(&a);
+  for (int i = 0; i < html.count - 7; i++) {
+    GupString view = {
+      .data = &html.data[i],
+      .count = 7,
+      .capacity = 7
+    };
 
-            view = (GupString) {
-                .data = &html.data[i],
-                .count = j - i,
-                .capacity = j - i
-            };
+    if (gup_string_eq_cstr(view, "class=\"")) {
+      i += 7;
+      int j = i;
+      while (html.data[j] != '"') {
+        j++;
+      }
 
-            GupArrayString tokens = gup_string_split_arena(&a, view, ' ');
-            // TODO: would be nice to have a Set
-            for (int k = 0; k < tokens.count; k++) {
-                gup_array_string_append_arena(&a, &html_rules, tokens.data[k]);
-            }
-        }
+      view = (GupString) {
+        .data = &html.data[i],
+        .count = j - i,
+        .capacity = j - i
+      };
+
+      GupArrayString tokens = gup_string_split_arena(&a, view, ' ');
+      // TODO: would be nice to have a Set
+      for (int k = 0; k < tokens.count; k++) {
+        gup_array_string_append_arena(&a, &html_rules, tokens.data[k]);
+      }
     }
-    printf("Successfully parsed %s.\n", html_file_path);
+  }
+  printf("Successfully parsed %s.\n", html_file_path);
 
-    printf("Generating taillight rules...\n");
-    GupArrayString no_namespace_rules = gup_array_string_create_arena(&a);
-    GupArrayString mobile_namespace_rules = gup_array_string_create_arena(&a);
-    GupArrayString tablet_namespace_rules = gup_array_string_create_arena(&a);
-    GupArrayString computer_namespace_rules = gup_array_string_create_arena(&a);
-    GupArrayString ultrawide_namespace_rules = gup_array_string_create_arena(&a);
-    GupArrayString unknown_rules = gup_array_string_create_arena(&a);
+  printf("Generating taillight rules...\n");
+  GupArrayString no_namespace_rules = gup_array_string_create_arena(&a);
+  GupArrayString mobile_namespace_rules = gup_array_string_create_arena(&a);
+  GupArrayString tablet_namespace_rules = gup_array_string_create_arena(&a);
+  GupArrayString computer_namespace_rules = gup_array_string_create_arena(&a);
+  GupArrayString ultrawide_namespace_rules = gup_array_string_create_arena(&a);
+  GupArrayString unknown_rules = gup_array_string_create_arena(&a);
 
-    // Generate the taillight rules from the parsed html rules
-    for (int i = 0; i < html_rules.count; i++) {
-        GupString html_rule = html_rules.data[i];
-        GupString taillight_rule = gup_string_create_arena(&a);
-        // Generate rule for this html rule
-        {
-            GupArrayString tokens = gup_string_split_arena(&a, html_rule, '-');
+  // Generate the taillight rules from the parsed html rules
+  for (int i = 0; i < html_rules.count; i++) {
+    GupString html_rule = html_rules.data[i];
+    GupString taillight_rule = gup_string_create_arena(&a);
+    // Generate rule for this html rule
+    {
+        GupArrayString tokens = gup_string_split_arena(&a, html_rule, '-');
 
-            GupArrayString name_and_namespace_as_tokens = gup_string_split_arena(&a, tokens.data[0], '_');
-            bool has_namespace = name_and_namespace_as_tokens.count == 2;
-            GupString abbreviated_name = has_namespace
-                ? name_and_namespace_as_tokens.data[1]
-                : name_and_namespace_as_tokens.data[0];
+        GupArrayString name_and_namespace_as_tokens = gup_string_split_arena(&a, tokens.data[0], '_');
+        bool has_namespace = name_and_namespace_as_tokens.count == 2;
+        GupString abbreviated_name = has_namespace
+            ? name_and_namespace_as_tokens.data[1]
+            : name_and_namespace_as_tokens.data[0];
 
-            bool is_important = false;
-            GupString value_and_units = tokens.count > 1
-                ? gup_string_copy_arena(&a, tokens.data[1])
-                : (GupString) {0};
-            gup_string_trim_char_in_place(&value_and_units, '!');
+        bool is_important = false;
+        GupString value_and_units = tokens.count > 1
+            ? gup_string_copy_arena(&a, tokens.data[1])
+            : (GupString) {0};
+        gup_string_trim_char_in_place(&value_and_units, '!');
 
-            GupString taillight_class = gup_string_create_arena(&a);
-            for (int i = 0; i < html_rule.count; i++) {
-                switch (html_rule.data[i]) {
-                    case '!': {
-                        gup_string_append_cstr_arena(&a, &taillight_class, "\\!");
-                        is_important = true;
-                        break;
-                    }
-                    case '%': {
-                        gup_string_append_cstr_arena(&a, &taillight_class, "\\%");
-                        break;
-                    }
-                    case '.': {
-                        gup_string_append_cstr_arena(&a, &taillight_class, "\\.");
-                        break;
-                    }
-                    case '#': {
-                        gup_string_append_cstr_arena(&a, &taillight_class, "\\#");
-                        break;
-                    }
-                    default: {
-                        gup_string_append_arena(&a, &taillight_class, html_rule.data[i]);
-                        break;
-                    }
+        GupString taillight_class = gup_string_create_arena(&a);
+        for (int i = 0; i < html_rule.count; i++) {
+            switch (html_rule.data[i]) {
+                case '!': {
+                    gup_string_append_cstr_arena(&a, &taillight_class, "\\!");
+                    is_important = true;
+                    break;
+                }
+                case '%': {
+                    gup_string_append_cstr_arena(&a, &taillight_class, "\\%");
+                    break;
+                }
+                case '.': {
+                    gup_string_append_cstr_arena(&a, &taillight_class, "\\.");
+                    break;
+                }
+                case '#': {
+                    gup_string_append_cstr_arena(&a, &taillight_class, "\\#");
+                    break;
+                }
+                default: {
+                    gup_string_append_arena(&a, &taillight_class, html_rule.data[i]);
+                    break;
                 }
             }
+        }
 
-            // These keywords are used by the media queries and don't need anything to be auto generated for them.
-            if (
-                gup_string_eq_cstr(html_rule, "mobile")   ||
-                gup_string_eq_cstr(html_rule, "tablet")   ||
-                gup_string_eq_cstr(html_rule, "computer") ||
-                gup_string_eq_cstr(html_rule, "ultrawide")
-            ) {
-                continue;
-            }
+        // These keywords are used by the media queries and don't need anything to be auto generated for them.
+        if (
+            gup_string_eq_cstr(html_rule, "mobile")   ||
+            gup_string_eq_cstr(html_rule, "tablet")   ||
+            gup_string_eq_cstr(html_rule, "computer") ||
+            gup_string_eq_cstr(html_rule, "ultrawide")
+        ) {
+            continue;
+        }
 
-            ADD_CLASSNAME(taillight_class);
+        // Add classname
+        if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");
+        gup_string_append_arena(&a, &taillight_rule, '.');
+        gup_string_append_str_arena(&a, &taillight_rule, classname);
+        gup_string_append_cstr_arena(&a, &taillight_rule, " {\n");
 
+        // Add properties
+        {
             if (gup_string_eq_cstr(abbreviated_name, "absolute")) {
                 ADD_KEY_VALUE_LITERAL("position: absolute");
             } else if (gup_string_eq_cstr(abbreviated_name, "alignStart")) {
@@ -310,94 +311,95 @@ int main(int argc, char **argv) {
                     gup_array_string_append_arena(&a, &unknown_rules, html_rule);
                 }
             }
-
-            if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");
-            gup_string_append_cstr_arena(&a, &taillight_rule, "}");
         }
-        
-        // TODO: using Sets would be better instead of manually checking whether they're already contained, I'd guess 
-        if (gup_string_starts_with_cstr(html_rule, "m_")) {
-            if (!gup_array_string_contains(mobile_namespace_rules, taillight_rule)) {
-                gup_array_string_append_arena(&a, &mobile_namespace_rules, taillight_rule);
-            }
-        } else if (gup_string_starts_with_cstr(html_rule, "t_")) {
-            if (!gup_array_string_contains(tablet_namespace_rules, taillight_rule)) {
-                gup_array_string_append_arena(&a, &tablet_namespace_rules, taillight_rule);
-            }
-        } else if (gup_string_starts_with_cstr(html_rule, "c_")) {
-            if (!gup_array_string_contains(computer_namespace_rules, taillight_rule)) {
-                gup_array_string_append_arena(&a, &computer_namespace_rules, taillight_rule);
-            }
-        } else if (gup_string_starts_with_cstr(html_rule, "uw_")) {
-            if (!gup_array_string_contains(ultrawide_namespace_rules, taillight_rule)) {
-                gup_array_string_append_arena(&a, &ultrawide_namespace_rules, taillight_rule);
-            }
-        } else if (!gup_array_string_contains(no_namespace_rules, taillight_rule)) {
-            gup_array_string_append_arena(&a, &no_namespace_rules, taillight_rule);
-        }
+
+        if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");
+        gup_string_append_cstr_arena(&a, &taillight_rule, "}");
     }
-
-    if (unknown_rules.count > 0) {
-        printf("WARNING: Taillight found the following class names but didn't recognize them. These are probably just custom classes you have, but you might want to check out this list just in case:\n");
-        gup_array_string_print(unknown_rules);
-    }
-    printf("Successfully generated taillight rules.\n");
-
-    // Write the lines to the final css file 
-    printf("Writing taillight rules to %s...\n", css_file_path);
-
-    // NOTE: Writing this first line is actually a sort of hack to make sure we can append everything afterwards
-    // but still be overwriting any old file that might be there. 
-    gup_file_write_cstr(      "/**\n * Stylesheet generated by taillight https://github.com/cbouwense/taillight.\n", css_file_path);
-    gup_file_append_line_cstr(" * You can edit this file, but I would not recommend it since it will be overwritten without warning the next time you run taillight.", css_file_path);
-    gup_file_append_line_cstr(" * If you want to add your own rules, I recommend you add them to a separate stylesheet (I use a 'custom.css' file for this).\n */", css_file_path);
     
-    gup_file_append_lines_arena(&a, no_namespace_rules, css_file_path);
+    // TODO: using Sets would be better instead of manually checking whether they're already contained, I'd guess 
+    if (gup_string_starts_with_cstr(html_rule, "m_")) {
+        if (!gup_array_string_contains(mobile_namespace_rules, taillight_rule)) {
+            gup_array_string_append_arena(&a, &mobile_namespace_rules, taillight_rule);
+        }
+    } else if (gup_string_starts_with_cstr(html_rule, "t_")) {
+        if (!gup_array_string_contains(tablet_namespace_rules, taillight_rule)) {
+            gup_array_string_append_arena(&a, &tablet_namespace_rules, taillight_rule);
+        }
+    } else if (gup_string_starts_with_cstr(html_rule, "c_")) {
+        if (!gup_array_string_contains(computer_namespace_rules, taillight_rule)) {
+            gup_array_string_append_arena(&a, &computer_namespace_rules, taillight_rule);
+        }
+    } else if (gup_string_starts_with_cstr(html_rule, "uw_")) {
+        if (!gup_array_string_contains(ultrawide_namespace_rules, taillight_rule)) {
+            gup_array_string_append_arena(&a, &ultrawide_namespace_rules, taillight_rule);
+        }
+    } else if (!gup_array_string_contains(no_namespace_rules, taillight_rule)) {
+        gup_array_string_append_arena(&a, &no_namespace_rules, taillight_rule);
+    }
+  }
 
-    gup_file_append_line_cstr("\n/* Mobile */", css_file_path);
-    gup_file_append_line_cstr("@media (max-width: 768px) {", css_file_path);
-    gup_file_append_line_cstr("  .mobile { display: inherit; }", css_file_path);
-    gup_file_append_line_cstr("  .tablet { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  .computer { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  .ultrawide { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  :root { font-size: 14px; }", css_file_path);
-    gup_file_append_lines_arena(&a, mobile_namespace_rules, css_file_path);
-    gup_file_append_line_cstr("}", css_file_path);
+  if (unknown_rules.count > 0) {
+    printf("WARNING: Taillight found the following class names but didn't recognize them. These are probably just custom classes you have, but you might want to check out this list just in case:\n");
+    gup_array_string_print(unknown_rules);
+  }
+  printf("Successfully generated taillight rules.\n");
 
-    gup_file_append_line_cstr("\n/* Tablet */", css_file_path);
-    gup_file_append_line_cstr("@media (min-width: 768px) and (max-width: 1024px) {", css_file_path);
-    gup_file_append_line_cstr("  .mobile { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  .tablet { display: inherit; }", css_file_path);
-    gup_file_append_line_cstr("  .computer { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  .ultrawide { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  :root { font-size: 14px; }", css_file_path);
-    gup_file_append_lines_arena(&a, tablet_namespace_rules, css_file_path);
-    gup_file_append_line_cstr("}", css_file_path);
+  // Write the lines to the final css file 
+  printf("Writing taillight rules to %s...\n", css_file_path);
 
-    gup_file_append_line_cstr("\n/* Computer (desktop / laptop) */", css_file_path);
-    gup_file_append_line_cstr("@media (min-width: 1024px) and (max-width: 3840px) {", css_file_path);
-    gup_file_append_line_cstr("  .mobile { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  .tablet { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  .computer { display: inherit; }", css_file_path);
-    gup_file_append_line_cstr("  .ultrawide { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  :root { font-size: 18px; }", css_file_path);
-    gup_file_append_lines_arena(&a, computer_namespace_rules, css_file_path);
-    gup_file_append_line_cstr("}", css_file_path);
+  // NOTE: Writing this first line is actually a sort of hack to make sure we can append everything afterwards
+  // but still be overwriting any old file that might be there. 
+  gup_file_write_cstr(      "/**\n * Stylesheet generated by taillight https://github.com/cbouwense/taillight.\n", css_file_path);
+  gup_file_append_line_cstr(" * You can edit this file, but I would not recommend it since it will be overwritten without warning the next time you run taillight.", css_file_path);
+  gup_file_append_line_cstr(" * If you want to add your own rules, I recommend you add them to a separate stylesheet (I use a 'custom.css' file for this).\n */", css_file_path);
+  
+  gup_file_append_lines_arena(&a, no_namespace_rules, css_file_path);
 
-    gup_file_append_line_cstr("\n/* Ultrawide */", css_file_path);
-    gup_file_append_line_cstr("@media (min-width: 3840px) {", css_file_path);
-    gup_file_append_line_cstr("  .mobile { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  .tablet { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  .computer { display: none; }", css_file_path);
-    gup_file_append_line_cstr("  .ultrawide { display: inherit; }", css_file_path);
-    gup_file_append_line_cstr("  :root { font-size: 18px; }", css_file_path);
-    gup_file_append_lines_arena(&a, ultrawide_namespace_rules, css_file_path);
-    gup_file_append_line_cstr("}", css_file_path);
+  gup_file_append_line_cstr("\n/* Mobile */", css_file_path);
+  gup_file_append_line_cstr("@media (max-width: 768px) {", css_file_path);
+  gup_file_append_line_cstr("  .mobile { display: inherit; }", css_file_path);
+  gup_file_append_line_cstr("  .tablet { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  .computer { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  .ultrawide { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  :root { font-size: 14px; }", css_file_path);
+  gup_file_append_lines_arena(&a, mobile_namespace_rules, css_file_path);
+  gup_file_append_line_cstr("}", css_file_path);
 
-    printf("Successfully wrote taillight rules to %s.\n", css_file_path);
+  gup_file_append_line_cstr("\n/* Tablet */", css_file_path);
+  gup_file_append_line_cstr("@media (min-width: 768px) and (max-width: 1024px) {", css_file_path);
+  gup_file_append_line_cstr("  .mobile { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  .tablet { display: inherit; }", css_file_path);
+  gup_file_append_line_cstr("  .computer { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  .ultrawide { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  :root { font-size: 14px; }", css_file_path);
+  gup_file_append_lines_arena(&a, tablet_namespace_rules, css_file_path);
+  gup_file_append_line_cstr("}", css_file_path);
 
-    printf("All done, hope it looks good!\n");
+  gup_file_append_line_cstr("\n/* Computer (desktop / laptop) */", css_file_path);
+  gup_file_append_line_cstr("@media (min-width: 1024px) and (max-width: 3840px) {", css_file_path);
+  gup_file_append_line_cstr("  .mobile { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  .tablet { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  .computer { display: inherit; }", css_file_path);
+  gup_file_append_line_cstr("  .ultrawide { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  :root { font-size: 18px; }", css_file_path);
+  gup_file_append_lines_arena(&a, computer_namespace_rules, css_file_path);
+  gup_file_append_line_cstr("}", css_file_path);
 
-    gup_arena_destroy(a);
-    return 0;
+  gup_file_append_line_cstr("\n/* Ultrawide */", css_file_path);
+  gup_file_append_line_cstr("@media (min-width: 3840px) {", css_file_path);
+  gup_file_append_line_cstr("  .mobile { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  .tablet { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  .computer { display: none; }", css_file_path);
+  gup_file_append_line_cstr("  .ultrawide { display: inherit; }", css_file_path);
+  gup_file_append_line_cstr("  :root { font-size: 18px; }", css_file_path);
+  gup_file_append_lines_arena(&a, ultrawide_namespace_rules, css_file_path);
+  gup_file_append_line_cstr("}", css_file_path);
+
+  printf("Successfully wrote taillight rules to %s.\n", css_file_path);
+
+  printf("All done, hope it looks good!\n");
+
+  gup_arena_destroy(a);
+  return 0;
 }
