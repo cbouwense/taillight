@@ -18,11 +18,11 @@
 
 /* Mobile */
 @media (max-width: 768px) {
-.mobile { display: inherit; }
-.tablet { display: none; }
-.computer { display: none; }
-.ultrawide { display: none; }
-:root { font-size: 14px; }
+  .mobile { display: inherit; }
+  .tablet { display: none; }
+  .computer { display: none; }
+  .ultrawide { display: none; }
+  :root { font-size: 14px; }
 }
 
 /* Tablet */
