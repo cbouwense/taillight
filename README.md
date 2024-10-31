@@ -13,7 +13,6 @@ make
 
 ### Input HTML
 
-index.html
 ```html
 <main class="w-100% uw_w-75% bg-#181818">
   <div class="flex gap-1rem">
@@ -26,7 +25,6 @@ index.html
 
 ### Output CSS
 
-taillight.css
 ```css
 .w-100\% {
   width: 100%;
@@ -63,12 +61,13 @@ zig build-exe taillight.c
 ./taillight
 
 # Or you can specify what you want
-./taillight ../relative/path/to/input.html ./relative/../path/to/output.css
+./taillight ./path/to/input.html ./path/to/output.css
 
 # There's a watch mode too, so you don't remember to rerun taillight after modifying the html
 ./taillight --watch
+./taillight -w input.html output.css
 ```
 
 ## Documentation
 
-Coming soon!
+Probably coming
