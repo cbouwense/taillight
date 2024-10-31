@@ -63,7 +63,7 @@ zig build-exe taillight.c
 # Or you can specify what you want
 ./taillight ./path/to/input.html ./path/to/output.css
 
-# There's a watch mode too (`-w`|`--watch`) so you don't remember to rerun taillight after modifying the html
+# There's a watch mode (-w|--watch) so you don't have to remember to rerun taillight after modifying your html
 ./taillight --watch
 ./taillight -w input.html output.css
 ```
