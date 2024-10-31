@@ -64,6 +64,9 @@ zig build-exe taillight.c
 
 # Or you can specify what you want
 ./taillight ../relative/path/to/input.html ./relative/../path/to/output.css
+
+# There's a watch mode too, so you don't remember to rerun taillight after modifying the html
+./taillight --watch
 ```
 
 ## Documentation

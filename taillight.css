@@ -23,9 +23,6 @@
   .computer { display: none; }
   .ultrawide { display: none; }
   :root { font-size: 14px; }
-  .m_w-75\% {
-    width: 75%;
-  }
 }
 
 /* Tablet */
@@ -44,6 +41,9 @@
   .computer { display: inherit; }
   .ultrawide { display: none; }
   :root { font-size: 18px; }
+  .c_w-75\% {
+    width: 75%;
+  }
 }
 
 /* Ultrawide */

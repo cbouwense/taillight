@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -285,6 +286,7 @@ GupArrayString   gup_file_read_lines_keep_newlines_arena(GupArena *a, const char
 char           **gup_file_read_lines_as_cstrs_keep_newlines(const char *file_path);
 char           **gup_file_read_lines_as_cstrs_keep_newlines_arena(GupArena *a, const char *file_path);
 long             gup_file_size(const char *file_path);
+int              gup_file_watch(const char *file_path, void (*fn)(void));
 void             gup_file_write_arena(GupArena *a, GupString text_to_write, const char *file_path);
 void             gup_file_write_cstr(const char *text_to_write, const char *file_path);
 void             gup_file_write_lines_arena(GupArena *a, GupArrayString lines_to_write, const char *file_path);
@@ -2677,6 +2679,35 @@ long gup_file_size(const char *file_path) {
     fclose(fp);
 
     return file_size;
+}
+
+int gup_file_watch(const char *file_path, void (*fn)(void)) {
+    if (file_path == NULL || strcmp(file_path, "") == 0) {
+        printf("ERROR: Didn't receive a file to watch.\n");
+        exit(1);
+    }
+
+    struct stat file_stat;
+    time_t last_modified_time = 0;
+
+    while(true) {
+        gup_assert_verbose(stat(file_path, &file_stat) == 0, "Tried to read the metadata of the file you're watching, but wasn't able to for whatever reason.");
+        
+        time_t current_modified_time = file_stat.st_mtime;
+
+        bool file_was_updated_since_last_checked = current_modified_time > last_modified_time;
+        if (file_was_updated_since_last_checked) {
+            // Do the thing you wanted to do when the file is updated
+            fn();
+            printf("Last modified: %s", ctime(&file_stat.st_mtime));
+
+            last_modified_time = current_modified_time;
+        }
+
+        usleep(34000); // Should be around 30 fps
+    } 
+
+    return 0;
 }
 
 void gup_file_write_arena(GupArena *a, GupString text_to_write, const char *file_path) {

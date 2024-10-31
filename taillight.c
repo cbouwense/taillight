@@ -20,10 +20,13 @@
       gup_string_append_cstr_arena(&a, &taillight_rule, ";\n");\
   } while (0)
 
-int main(int argc, char **argv) {
-  char *html_file_path = (argc > 1) ? argv[1] : "index.html";
-  char *css_file_path = (argc > 2) ? argv[2] : "taillight.css";
+// TODO: these global paths kinda bother me, but I put them in so I could do the watch mode.
+// Specifically, the watch mode take a function pointer with no arguments, so I can't have
+// them as arguments to run like I'd like to.
+char *html_file_path;
+char *css_file_path;
 
+void run() {
   GupArena a = gup_arena_create();
 
   // Scrape the raw rules from the HTML
@@ -399,7 +402,26 @@ int main(int argc, char **argv) {
   printf("Successfully wrote taillight rules to %s.\n", css_file_path);
 
   printf("All done, hope it looks good!\n");
-
   gup_arena_destroy(a);
+}
+
+int main(int argc, char **argv) {
+  html_file_path = (argc > 1) ? argv[1] : "index.html";
+  css_file_path = (argc > 2) ? argv[2] : "taillight.css";
+
+  bool watch_mode = false;
+  for (int i = 3; i < argc; i++) {
+    if (strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--watch") == 0) {
+      watch_mode = true;
+    }
+  }
+  // TODO: -h / --help, -v / --verbose
+
+  if (watch_mode) {
+    gup_file_watch(html_file_path, run);
+  } else {
+    run();
+  }
+
   return 0;
 }
