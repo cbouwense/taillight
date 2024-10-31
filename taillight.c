@@ -25,12 +25,15 @@
 // them as arguments to run like I'd like to.
 char *html_file_path;
 char *css_file_path;
+bool verbose_mode;
 
 void run() {
   GupArena a = gup_arena_create();
 
   // Scrape the raw rules from the HTML
-  printf("Parsing %s...\n", html_file_path);
+  if (verbose_mode) {
+    printf("Parsing %s...\n", html_file_path);
+  }
   GupString html = gup_file_read_arena(&a, html_file_path);
   GupArrayString html_rules = gup_array_string_create_arena(&a);
   for (int i = 0; i < html.count - 7; i++) {
@@ -60,9 +63,13 @@ void run() {
       }
     }
   }
-  printf("Successfully parsed %s.\n", html_file_path);
+  if (verbose_mode) {
+    printf("Successfully parsed %s.\n", html_file_path);
+  }
 
-  printf("Generating taillight rules...\n");
+  if (verbose_mode) {
+    printf("Generating taillight rules...\n");
+  }
   GupArrayString no_namespace_rules = gup_array_string_create_arena(&a);
   GupArrayString mobile_namespace_rules = gup_array_string_create_arena(&a);
   GupArrayString tablet_namespace_rules = gup_array_string_create_arena(&a);
@@ -342,14 +349,18 @@ void run() {
     }
   }
 
-  if (unknown_rules.count > 0) {
+  if (unknown_rules.count > 0 && verbose_mode) {
     printf("WARNING: Taillight found the following class names but didn't recognize them. These are probably just custom classes you have, but you might want to check out this list just in case:\n");
     gup_array_string_print(unknown_rules);
   }
-  printf("Successfully generated taillight rules.\n");
+  if (verbose_mode) {
+    printf("Successfully generated taillight rules.\n");
+  }
 
-  // Write the lines to the final css file 
-  printf("Writing taillight rules to %s...\n", css_file_path);
+  // Write the lines to the final css file
+  if (verbose_mode) {
+    printf("Writing taillight rules to %s...\n", css_file_path);
+  }
 
   // NOTE: Writing this first line is actually a sort of hack to make sure we can append everything afterwards
   // but still be overwriting any old file that might be there. 
@@ -399,23 +410,51 @@ void run() {
   gup_file_append_lines_arena(&a, ultrawide_namespace_rules, css_file_path);
   gup_file_append_line_cstr("}", css_file_path);
 
-  printf("Successfully wrote taillight rules to %s.\n", css_file_path);
+  if (verbose_mode) {
+    printf("Successfully wrote taillight rules to %s.\n", css_file_path);
+    printf("All done, hope it looks good!\n");
+  }
 
-  printf("All done, hope it looks good!\n");
   gup_arena_destroy(a);
 }
 
 int main(int argc, char **argv) {
-  html_file_path = (argc > 1) ? argv[1] : "index.html";
-  css_file_path = (argc > 2) ? argv[2] : "taillight.css";
-
+  // Process arguments
   bool watch_mode = false;
-  for (int i = 3; i < argc; i++) {
-    if (strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--watch") == 0) {
+  for (int i = 1; i < argc; i++) {
+    GupString arg_view = (GupString) {
+      .data = argv[i],
+      .count = gup_cstr_length(argv[i]),
+      .capacity = gup_cstr_length(argv[i])
+    };
+
+    if (gup_string_ends_with_cstr(arg_view, ".html")) {
+      html_file_path = argv[i];
+    }
+    else if (gup_string_ends_with_cstr(arg_view, ".css")) {
+      css_file_path = argv[i];
+    }
+    else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+      printf("Usage: %s [optional input.html] [optional output.css] [flags]\n", argv[0]);
+      printf("Flags:\n");
+      printf("  -h, --help     Display this help message\n");
+      printf("  -v, --verbose  Enable verbose output\n");
+      printf("  -w, --watch    Enable watch mode, so taillight runs on every input html modification\n");
+      return 0;
+    }
+    else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0) {
+      verbose_mode = true;
+    }
+    else if (strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--watch") == 0) {
       watch_mode = true;
     }
   }
-  // TODO: -h / --help, -v / --verbose
+  if (html_file_path == NULL || strcmp(html_file_path, "") == 0) {
+    html_file_path = "index.html";
+  }
+  if (css_file_path == NULL || strcmp(css_file_path, "") == 0) {
+    css_file_path = "example.css";
+  }
 
   if (watch_mode) {
     gup_file_watch(html_file_path, run);

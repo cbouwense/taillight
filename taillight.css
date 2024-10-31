@@ -3,8 +3,8 @@
  * You can edit this file, but I would not recommend it since it will be overwritten without warning the next time you run taillight.
  * If you want to add your own rules, I recommend you add them to a separate stylesheet (I use a 'custom.css' file for this).
  */
-.w-100\% {
-  width: 100%;
+.w-75\% {
+  width: 75%;
 }
 .bg-\#dd0000 {
   background-color: #dd0000;
