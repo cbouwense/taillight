@@ -4,8 +4,8 @@ taillight: taillight.c guppy.h
 run: taillight
 	./taillight
 
-taillight_checker: ./tests/taillight_checker.c taillight
-	clang -g -Wall -Wextra --pedantic -fsanitize=address -o ./tests/taillight_checker ./tests/taillight_checker.c
+taillight_test: ./tests/taillight_test.c taillight
+	clang -g -Wall -Wextra --pedantic -fsanitize=address -o ./tests/taillight_test ./tests/taillight_test.c
 
-test: taillight_checker
-	./tests/taillight_checker
+test: taillight_test
+	./tests/taillight_test

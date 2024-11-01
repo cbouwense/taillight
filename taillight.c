@@ -14,8 +14,11 @@
       if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
       gup_string_append_cstr_arena(&a, &taillight_rule, "  ");\
       gup_string_append_cstr_arena(&a, &taillight_rule, key);\
-      gup_string_append_cstr_arena(&a, &taillight_rule, ": ");\
-      gup_string_append_str_arena(&a, &taillight_rule, value_and_units);\
+      gup_string_append_cstr_arena(&a, &taillight_rule, ":");\
+      for (int j = 0; j < values_and_units.count; j++) {\
+        gup_string_append_cstr_arena(&a, &taillight_rule, " ");\
+        gup_string_append_str_arena(&a, &taillight_rule, values_and_units.data[j]);\
+      }\
       if (is_important) gup_string_append_cstr_arena(&a, &taillight_rule, " !important");\
       gup_string_append_cstr_arena(&a, &taillight_rule, ";\n");\
   } while (0)
@@ -85,17 +88,21 @@ void run() {
     {
       GupArrayString tokens = gup_string_split_arena(&a, html_rule, '-');
 
+      // TODO: change to :
       GupArrayString name_and_namespace_as_tokens = gup_string_split_arena(&a, tokens.data[0], '_');
+      // A "namespace" is a prefix for specifying the device type (e.g. `m:` for mobile, `uw:` for ultra-wide).
       bool has_namespace = name_and_namespace_as_tokens.count == 2;
       GupString abbreviated_name = has_namespace
         ? name_and_namespace_as_tokens.data[1]
         : name_and_namespace_as_tokens.data[0];
 
       bool is_important = false;
-      GupString value_and_units = tokens.count > 1
-        ? gup_string_copy_arena(&a, tokens.data[1])
-        : (GupString) {0};
-      gup_string_trim_char_in_place(&value_and_units, '!');
+      GupArrayString values_and_units = gup_array_string_create_arena(&a);
+      for (int j = 1; j < tokens.count; j++) {
+        GupString token = tokens.data[j];
+        GupString trimmed_token = gup_string_trim_char_arena(&a, token, '!');
+        gup_array_string_append_arena(&a, &values_and_units, trimmed_token);
+      }
 
       GupString taillight_class = gup_string_create_arena(&a);
       for (int i = 0; i < html_rule.count; i++) {
@@ -154,14 +161,18 @@ void run() {
           ADD_KEY_VALUE_LITERAL("align-items: baseline");
         } else if (gup_string_eq_cstr(abbreviated_name, "alignStretch")) {
           ADD_KEY_VALUE_LITERAL("align-items: stretch");
-        } else if (gup_string_eq_cstr(abbreviated_name, "b")) { // TODO: border is a strange one, it has such variable values, not sure how to process it yet.
+        } else if (gup_string_eq_cstr(abbreviated_name, "b")) {
           ADD_KEY_WITH_PARSED_VALUE("border");
+        } else if (gup_string_eq_cstr(abbreviated_name, "breakAll")) {
+          ADD_KEY_VALUE_LITERAL("word-break: break-all");
+        } else if (gup_string_eq_cstr(abbreviated_name, "breakWord")) {
+          ADD_KEY_VALUE_LITERAL("word-wrap: break-word");
         } else if (gup_string_eq_cstr(abbreviated_name, "basis")) {
           ADD_KEY_WITH_PARSED_VALUE("flex-basis");
         } else if (gup_string_eq_cstr(abbreviated_name, "bb")) {
           ADD_KEY_WITH_PARSED_VALUE("border-bottom");
         } else if (gup_string_eq_cstr(abbreviated_name, "bg")) {
-          if (gup_string_eq_cstr(value_and_units, "default")) {
+          if (gup_string_eq_cstr(values_and_units.data[0], "default")) {
             ADD_KEY_VALUE_LITERAL("background-color: var(--background-color)");
           } else {
             ADD_KEY_WITH_PARSED_VALUE("background-color");
@@ -203,11 +214,11 @@ void run() {
           if (has_namespace) gup_string_append_cstr_arena(&a, &taillight_rule, "  ");
           gup_string_append_cstr_arena(&a, &taillight_rule, "  ");
           gup_string_append_cstr_arena(&a, &taillight_rule, "grid-template-columns: ");
-          if (gup_string_eq_cstr(value_and_units, "1")) {
+          if (gup_string_eq_cstr(values_and_units.data[0], "1")) {
             gup_string_append_cstr_arena(&a, &taillight_rule, "minmax(0, 1fr)");
           } else {
             gup_string_append_cstr_arena(&a, &taillight_rule, "repeat(");
-            gup_string_append_str_arena(&a, &taillight_rule, value_and_units);
+            gup_string_append_str_arena(&a, &taillight_rule, values_and_units.data[0]);
             gup_string_append_cstr_arena(&a, &taillight_rule,", 1fr)");
           }
           if (is_important) gup_string_append_cstr_arena(&a, &taillight_rule, " !important");
@@ -415,45 +426,47 @@ void run() {
     printf("All done, hope it looks good!\n");
   }
 
-  gup_arena_destroy(a);
+  gup_arena_destroy(&a);
 }
 
 int main(int argc, char **argv) {
-  // Process arguments
   bool watch_mode = false;
-  for (int i = 1; i < argc; i++) {
-    GupString arg_view = (GupString) {
-      .data = argv[i],
-      .count = gup_cstr_length(argv[i]),
-      .capacity = gup_cstr_length(argv[i])
-    };
+  // Process arguments
+  {
+    for (int i = 1; i < argc; i++) {
+      GupString arg_view = (GupString) {
+        .data = argv[i],
+        .count = gup_cstr_length(argv[i]),
+        .capacity = gup_cstr_length(argv[i])
+      };
 
-    if (gup_string_ends_with_cstr(arg_view, ".html")) {
-      html_file_path = argv[i];
+      if (gup_string_ends_with_cstr(arg_view, ".html")) {
+        html_file_path = argv[i];
+      }
+      else if (gup_string_ends_with_cstr(arg_view, ".css")) {
+        css_file_path = argv[i];
+      }
+      else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+        printf("Usage: %s [optional input.html] [optional output.css] [flags]\n", argv[0]);
+        printf("Flags:\n");
+        printf("  -h, --help     Display this help message\n");
+        printf("  -v, --verbose  Enable verbose output\n");
+        printf("  -w, --watch    Enable watch mode, so taillight runs on every input html modification\n");
+        return 0;
+      }
+      else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0) {
+        verbose_mode = true;
+      }
+      else if (strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--watch") == 0) {
+        watch_mode = true;
+      }
     }
-    else if (gup_string_ends_with_cstr(arg_view, ".css")) {
-      css_file_path = argv[i];
+    if (html_file_path == NULL || strcmp(html_file_path, "") == 0) {
+      html_file_path = "index.html";
     }
-    else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-      printf("Usage: %s [optional input.html] [optional output.css] [flags]\n", argv[0]);
-      printf("Flags:\n");
-      printf("  -h, --help     Display this help message\n");
-      printf("  -v, --verbose  Enable verbose output\n");
-      printf("  -w, --watch    Enable watch mode, so taillight runs on every input html modification\n");
-      return 0;
+    if (css_file_path == NULL || strcmp(css_file_path, "") == 0) {
+      css_file_path = "example.css";
     }
-    else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0) {
-      verbose_mode = true;
-    }
-    else if (strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--watch") == 0) {
-      watch_mode = true;
-    }
-  }
-  if (html_file_path == NULL || strcmp(html_file_path, "") == 0) {
-    html_file_path = "index.html";
-  }
-  if (css_file_path == NULL || strcmp(css_file_path, "") == 0) {
-    css_file_path = "example.css";
   }
 
   if (watch_mode) {

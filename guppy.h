@@ -80,7 +80,7 @@ typedef GupArrayPtr GupArena;
 
 // Arena -------------------------------------------------------------------------------------------
 GupArena  gup_arena_create();
-void      gup_arena_destroy(GupArena a); // Free all the allocated memory and the arena itself
+void      gup_arena_destroy(GupArena *a); // Free all the allocated memory and the arena itself
 void     *gup_arena_alloc(GupArena *a, size_t bytes);
 void      gup_arena_free(GupArena *a); // Free all the allocated memory, but not the arena itself
 
@@ -269,6 +269,7 @@ bool           gup_array_string_find(GupArrayString xs, bool (*fn)(GupString), G
 // File operations ---------------------------------------------------------------------------------
 bool             gup_file_create(const char *file_path);
 bool             gup_file_delete(const char *file_path);
+bool             gup_file_exists(const char *file_path);
 bool             gup_file_is_empty(const char *file_path);
 int              gup_file_line_count(const char *file_path);
 void             gup_file_print(const char *file_path);
@@ -347,6 +348,7 @@ char           gup_string_reduce(GupString str, char (*fn)(char, char), char sta
 bool           gup_string_find(GupString str, bool (*fn)(char), char *out);
 bool           gup_string_find_arena(GupArena *a, GupString str, bool (*fn)(char), char *out);
 GupString      gup_string_trim_char(GupString str, char c);
+GupString      gup_string_trim_char_arena(GupArena *a, GupString str, char c);
 void           gup_string_trim_char_in_place(GupString *str, char c);
 GupString      gup_string_trim_fn(GupString str, bool (*fn)(char));
 GupString      gup_string_trim_fn_arena(GupArena *a, GupString str, bool (*fn)(char));
@@ -422,9 +424,9 @@ GupArena gup_arena_create() {
     };
 }
 
-void gup_arena_destroy(GupArena a) {
-    gup_arena_free(&a);
-    free(a.data);
+void gup_arena_destroy(GupArena *a) {
+    gup_arena_free(a);
+    free(a->data);
 }
 
 void *gup_arena_alloc(GupArena *a, size_t bytes) {
@@ -2189,6 +2191,20 @@ bool gup_file_delete(const char *file_path) {
     return result;
 }
 
+bool gup_file_exists(const char *file_path) {
+    FILE *fp = fopen(file_path, "r");
+    if (fp == NULL) {
+        #ifdef GUPPY_VERBOSE
+        printf("Error opening file %s\n", file_path);
+        #endif
+
+        return false;
+    }
+
+    fclose(fp);
+    return true;
+}
+
 bool gup_file_is_empty(const char *file_path) {
     int line_count = gup_file_line_count(file_path);
     gup_assert_verbose(line_count != -1, "gup_file_line_count had an issue while opening the file.");
@@ -3002,7 +3018,9 @@ GupString gup_string_trim_char_arena(GupArena *a, GupString str, char c) {
     GupString trimmed_str = gup_string_copy_arena(a, str);
 
     int i = 0;
-    for (; i < trimmed_str.count && trimmed_str.data[i] == c; i++) {}
+    while (i < trimmed_str.count && trimmed_str.data[i] == c) {
+        i++;
+    }
     memmove(trimmed_str.data, trimmed_str.data + i, trimmed_str.count - i);
     trimmed_str.count -= i;
 
