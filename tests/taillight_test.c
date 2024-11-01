@@ -32,7 +32,6 @@ int main() {
         sprintf(css_actual_file_path, "./tests/test%d_actual.css", test_num);
         sprintf(css_expected_file_path, "./tests/test%d_expected.css", test_num);
 
-        // TODO: is this overkill?
         gup_arena_free(&a);
     }
 
