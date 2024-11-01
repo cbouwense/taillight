@@ -88,8 +88,7 @@ void run() {
     {
       GupArrayString tokens = gup_string_split_arena(&a, html_rule, '-');
 
-      // TODO: change to :
-      GupArrayString name_and_namespace_as_tokens = gup_string_split_arena(&a, tokens.data[0], '_');
+      GupArrayString name_and_namespace_as_tokens = gup_string_split_arena(&a, tokens.data[0], ':');
       // A "namespace" is a prefix for specifying the device type (e.g. `m:` for mobile, `uw:` for ultra-wide).
       bool has_namespace = name_and_namespace_as_tokens.count == 2;
       GupString abbreviated_name = has_namespace
@@ -107,6 +106,10 @@ void run() {
       GupString taillight_class = gup_string_create_arena(&a);
       for (int i = 0; i < html_rule.count; i++) {
         switch (html_rule.data[i]) {
+          case ':': {
+            gup_string_append_cstr_arena(&a, &taillight_class, "\\:");
+            break;
+          }
           case '!': {
             gup_string_append_cstr_arena(&a, &taillight_class, "\\!");
             is_important = true;
@@ -339,19 +342,19 @@ void run() {
     }
     
     // TODO: using Sets would be better instead of manually checking whether they're already contained, I'd guess 
-    if (gup_string_starts_with_cstr(html_rule, "m_")) {
+    if (gup_string_starts_with_cstr(html_rule, "m:")) {
       if (!gup_array_string_contains(mobile_namespace_rules, taillight_rule)) {
         gup_array_string_append_arena(&a, &mobile_namespace_rules, taillight_rule);
       }
-    } else if (gup_string_starts_with_cstr(html_rule, "t_")) {
+    } else if (gup_string_starts_with_cstr(html_rule, "t:")) {
       if (!gup_array_string_contains(tablet_namespace_rules, taillight_rule)) {
         gup_array_string_append_arena(&a, &tablet_namespace_rules, taillight_rule);
       }
-    } else if (gup_string_starts_with_cstr(html_rule, "c_")) {
+    } else if (gup_string_starts_with_cstr(html_rule, "c:")) {
       if (!gup_array_string_contains(computer_namespace_rules, taillight_rule)) {
         gup_array_string_append_arena(&a, &computer_namespace_rules, taillight_rule);
       }
-    } else if (gup_string_starts_with_cstr(html_rule, "uw_")) {
+    } else if (gup_string_starts_with_cstr(html_rule, "uw:")) {
       if (!gup_array_string_contains(ultrawide_namespace_rules, taillight_rule)) {
         gup_array_string_append_arena(&a, &ultrawide_namespace_rules, taillight_rule);
       }

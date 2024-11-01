@@ -23,7 +23,7 @@
   .computer { display: none; }
   .ultrawide { display: none; }
   :root { font-size: 14px; }
-  .m_w-75\% {
+  .m\:w-75\% {
     width: 75%;
   }
 }
@@ -53,7 +53,7 @@
   .computer { display: none; }
   .ultrawide { display: inherit; }
   :root { font-size: 18px; }
-  .uw_w-50\% {
+  .uw\:w-50\% {
     width: 50%;
   }
 }
