@@ -104,6 +104,7 @@ void run() {
       }
 
       GupString taillight_class = gup_string_create_arena(&a);
+      // TODO: this can probably be DRY'd up
       for (int i = 0; i < html_rule.count; i++) {
         switch (html_rule.data[i]) {
           case ':': {
@@ -330,10 +331,13 @@ void run() {
           ADD_KEY_VALUE_LITERAL("word-wrap: break-word");
         } else if (gup_string_eq_cstr(abbreviated_name, "z")) {
           ADD_KEY_WITH_PARSED_VALUE("z-index");
-        } else {
+        } else { // Parsed an unsupported token
+          // TODO: Set
           if (!gup_array_string_contains(unknown_rules, html_rule)) {
-            gup_array_string_append_arena(&a, &unknown_rules, html_rule);
+            gup_array_string_append_arena(&a, &unknown_rules, html_rule);  
           }
+          // If this rule is not supported by taillight, then we don't actually want to add it to the
+          continue;
         }
       }
 
