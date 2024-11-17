@@ -468,8 +468,17 @@ int main(int argc, char **argv) {
       html_file_path = "index.html";
     }
     if (css_file_path == NULL || strcmp(css_file_path, "") == 0) {
-      css_file_path = "example.css";
+      css_file_path = "taillight.css";
     }
+  }
+
+  // Check to see if html file even exists
+  if (!gup_file_exists(html_file_path)) {
+    if (verbose_mode) {
+      printf("ERROR: unable to find input html file at \"%s\". Are you sure the pathing is correct?", html_file_path);
+      gup_print_cwd();
+    }
+    exit(1);
   }
 
   if (watch_mode) {
