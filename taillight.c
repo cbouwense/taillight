@@ -23,12 +23,12 @@
       gup_string_append_cstr_arena(&a, &taillight_rule, ";\n");\
   } while (0)
 
-// TODO: these global paths kinda bother me, but I put them in so I could do the watch mode.
+// These global paths aren't ideal, but I put them in so I could do the watch mode.
 // Specifically, the watch mode take a function pointer with no arguments, so I can't have
 // them as arguments to run like I'd like to.
 char *html_file_path;
 char *css_file_path;
-bool verbose_mode;
+bool  verbose_mode;
 
 void run() {
   GupArena a = gup_arena_create();
@@ -104,7 +104,6 @@ void run() {
       }
 
       GupString taillight_class = gup_string_create_arena(&a);
-      // TODO: this can probably be DRY'd up
       for (int i = 0; i < html_rule.count; i++) {
         switch (html_rule.data[i]) {
           case ':': {

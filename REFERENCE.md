@@ -11,7 +11,7 @@ Here is a random set of example class names and how they get parsed
 | `m-10rem`    | undefined | margin                      | 10    | rem       | no        |
 | `uw:w-50%!`  | ultrawide | width                       | 50    | %         | yes       |
 | `flex`       | undefined | display                     | flex  | undefined | no        |
-| `c:px-12px!` | computer  | padding-left, padding-right | 12    | px        | yes       |
+| `c:py-12px!` | computer  | padding-top, padding-bottom | 12    | px        | yes       |
 
 ## Media queries
 
