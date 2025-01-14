@@ -3,148 +3,151 @@
  * You can edit this file, but I would not recommend it since it will be overwritten without warning the next time you run taillight.
  * If you want to add your own rules, I recommend you add them to a separate stylesheet (I use a 'custom.css' file for this).
  */
-.m-0 {
-  margin: 0;
+.w-80\% {
+  width: 80%;
 }
 .w-95\% {
   width: 95%;
+}
+.h-50vh {
+  height: 50vh;
+}
+.w-85\% {
+  width: 85%;
+}
+.w-100\% {
+  width: 100%;
+}
+.bg-blue {
+  background-color: blue;
+}
+.pl-8rem {
+  padding-left: 8rem;
+}
+.justifyBetween {
+  justify-content: space-between;
+}
+.grow-1 {
+  flex-grow: 1;
+}
+.grid {
+  display: grid;
+}
+.gap-4rem {
+  gap: 4rem;
+}
+.alignCenter {
+  align-items: center;
+}
+.fs-3rem {
+  font-size: 3rem;
+}
+.lightShadow {
+  box-shadow: 0 0 16px 0 rgba(255, 255, 255, 0.2);
+}
+.fs-5rem {
+  font-size: 5rem;
+}
+.w-50\% {
+  width: 50%;
+}
+.column {
+  flex-direction: column;
+}
+.fs-2rem {
+  font-size: 2rem;
+}
+.bg-yellow {
+  background-color: yellow;
+}
+.m-0 {
+  margin: 0;
+}
+.gap-1rem {
+  gap: 1rem;
+}
+.flex {
+  display: flex;
+}
+.basis-1 {
+  flex-basis: 1;
+}
+.bg-orange {
+  background-color: orange;
+}
+.fs-1\.5rem {
+  font-size: 1.5rem;
+}
+.w-25\% {
+  width: 25%;
+}
+.p-1rem {
+  padding: 1rem;
+}
+.relative {
+  position: relative;
+}
+.justifyCenter {
+  justify-content: center;
+}
+.maxw-100\% {
+  max-width: 100%;
+}
+.w-75\% {
+  width: 75%;
+}
+.mt-4rem {
+  margin-top: 4rem;
+}
+.bg-green {
+  background-color: green;
+}
+.p-0\.5rem {
+  padding: 0.5rem;
+}
+.gap-2rem {
+  gap: 2rem;
+}
+.gridCol-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.w-70\% {
+  width: 70%;
 }
 .sticky {
   position: sticky;
   top: 0;
   box-sizing: border-box;
 }
-.p-0\.5rem {
-  padding: 0.5rem;
+.underlineDots {
+  text-decoration: underline dotted;
 }
-.pl-8rem {
-  padding-left: 8rem;
-}
-.bg-default {
-  background-color: var(--background-color);
-}
-.fs-1\.5rem {
-  font-size: 1.5rem;
+.wrap {
+  word-wrap: break-word;
 }
 .z-2 {
   z-index: 2;
 }
-.flex {
-  display: flex;
-}
-.gap-4rem {
-  gap: 4rem;
-}
-.w-100\% {
-  width: 100%;
-}
-.mb-8rem {
-  margin-bottom: 8rem;
-}
-.z-1 {
-  z-index: 1;
-}
-.column {
-  flex-direction: column;
-}
-.justifyCenter {
-  justify-content: center;
-}
-.alignCenter {
-  align-items: center;
-}
-.w-70\% {
-  width: 70%;
-}
-.mt-4rem {
-  margin-top: 4rem;
-}
-.grid {
-  display: grid;
-}
-.gridCol-2 {
-  grid-template-columns: repeat(2, 1fr);
-}
-.gap-2rem {
-  gap: 2rem;
-}
-.fs-5rem {
-  font-size: 5rem;
-}
-.underlineDots {
-  text-decoration: underline dotted;
+.rounded {
+  border-radius: 8px;;
 }
 .h-75vh {
   height: 75vh;
 }
-.gap-1rem {
-  gap: 1rem;
-}
-.fs-2rem {
-  font-size: 2rem;
-}
-.h-50vh {
-  height: 50vh;
-}
-.p-1rem {
-  padding: 1rem;
-}
-.rounded {
-  border-radius: 8px;;
-}
-.lightShadow {
+.light-text {
   box-shadow: 0 0 16px 0 rgba(255, 255, 255, 0.2);
 }
-.relative {
-  position: relative;
+.z-1 {
+  z-index: 1;
 }
-.justifyBetween {
-  justify-content: space-between;
+.mb-8rem {
+  margin-bottom: 8rem;
 }
-.bg-blue {
-  background-color: blue;
-}
-.bg-green {
-  background-color: green;
-}
-.w-85\% {
-  width: 85%;
-}
-.w-80\% {
-  width: 80%;
-}
-.bg-yellow {
-  background-color: yellow;
-}
-.w-75\% {
-  width: 75%;
-}
-.bg-orange {
-  background-color: orange;
-}
-.w-50\% {
-  width: 50%;
-}
-.w-25\% {
-  width: 25%;
-}
-.basis-1 {
-  flex-basis: 1;
-}
-.grow-1 {
-  flex-grow: 1;
+.bg-default {
+  background-color: var(--background-color);
 }
 .shrink-1 {
   flex-shrink: 1;
-}
-.fs-3rem {
-  font-size: 3rem;
-}
-.maxw-100\% {
-  max-width: 100%;
-}
-.wrap {
-  word-wrap: break-word;
 }
 
 /* Mobile */
@@ -154,41 +157,41 @@
   .computer { display: none; }
   .ultrawide { display: none; }
   :root { font-size: 14px; }
-  .m\:w-75\% {
-    width: 75%;
-  }
   .m\:mt-0 {
     margin-top: 0;
-  }
-  .m\:gridCol-1 {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .m\:fs-4rem {
-    font-size: 4rem;
-  }
-  .m\:fs-3rem {
-    font-size: 3rem;
-  }
-  .m\:h-25vh {
-    height: 25vh;
-  }
-  .m\:gap-1rem {
-    gap: 1rem;
-  }
-  .m\:fs-1\.5rem {
-    font-size: 1.5rem;
-  }
-  .m\:column {
-    flex-direction: column;
-  }
-  .m\:gap-2rem {
-    gap: 2rem;
   }
   .m\:fs-2rem {
     font-size: 2rem;
   }
   .m\:fs-1rem {
     font-size: 1rem;
+  }
+  .m\:column {
+    flex-direction: column;
+  }
+  .m\:fs-4rem {
+    font-size: 4rem;
+  }
+  .m\:gap-1rem {
+    gap: 1rem;
+  }
+  .m\:gap-2rem {
+    gap: 2rem;
+  }
+  .m\:fs-3rem {
+    font-size: 3rem;
+  }
+  .m\:gridCol-1 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .m\:w-75\% {
+    width: 75%;
+  }
+  .m\:h-25vh {
+    height: 25vh;
+  }
+  .m\:fs-1\.5rem {
+    font-size: 1.5rem;
   }
 }
 

@@ -22,9 +22,11 @@ int main() {
 
         gup_assert_verbose(gup_file_exists(css_actual_file_path), "Taillight didn't actually produce an output css file.");
         
-        GupString expected = gup_file_read_arena(&a, css_expected_file_path);
-        GupString actual = gup_file_read_arena(&a, css_actual_file_path);
-        gup_assert_verbose(gup_string_eq(expected, actual), "The output css didn't match the expected!");
+        GupString expected;
+        gup_assert(gup_file_read((GupAllocator *)&a, css_expected_file_path, &expected));
+        GupString actual;
+        gup_assert(gup_file_read((GupAllocator *)&a, css_actual_file_path, &actual));
+        gup_assert_verbose(gup_string_equals(expected, actual), "The output css didn't match the expected!");
 
         printf("PASS\n");
         test_num++;
