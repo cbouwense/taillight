@@ -629,7 +629,8 @@ bool            gup_string_equals(GupString str_a, GupString str_b);
 bool            gup_string_equals_cstr(GupString str, const char *cstr, int cstr_length);
 int             gup_string_compare(GupAllocator *a, GupString x, GupString y); // Returns negative if x < y, 0 if x == y, positive if x > y (think strcmp).
 bool            gup_string_contains(GupString str, char c);
-bool            gup_string_contains_substring(GupString str, GupString sub_str); // TODO: contains cstr
+bool            gup_string_contains_cstr(GupString str, const char *sub_str);
+bool            gup_string_contains_substring(GupString str, GupString sub_str);
 void            gup_string_print(GupString str);
 void            gup_string_debug(GupString str);
 void            gup_string_append(GupAllocator *a, GupString *str, char c);
@@ -3243,6 +3244,27 @@ int gup_string_compare(GupAllocator *a, GupString x, GupString y) {
     const char *y_cstr = gup_string_to_cstr(a, y);
     
     return strcmp(x_cstr, y_cstr);
+}
+
+bool gup_string_contains_cstr(GupString str, const char *sub_str) {
+    const int sub_str_length = strlen(sub_str);
+    if (sub_str_length > str.count) {
+        return false;
+    }
+
+    for (int i = 0, j = 0; i < str.count; i++) {
+        if (str.data[i] == sub_str[j]) {
+            if (j == sub_str_length - 1) {
+                return true;
+            }
+
+            j++;
+        } else {
+            j = 0;
+        }
+    }
+
+    return false;
 }
 
 bool gup_string_contains_substring(GupString str, GupString sub_str) {
