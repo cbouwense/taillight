@@ -69,6 +69,58 @@ int main() {
         )
     );
 
+    gup_assert(
+        gup_string_contains_cstr(test_file_1_contents,
+            ".gap-1rem {" "\n"
+            "  gap: 1rem;""\n"
+            "}"           "\n"
+        )
+    );
+
+    gup_assert(
+        gup_string_contains_cstr(test_file_1_contents,
+            ".flex {"         "\n"
+            "  display: flex;""\n"
+            "}"               "\n"
+        )
+    );
+
+    gup_assert(
+        gup_string_contains_cstr(test_file_1_contents,
+            ".bg-\\#dd0000 {"             "\n"
+            "  background-color: #dd0000;""\n"
+            "}"                           "\n"
+        )
+    );
+
+    gup_assert(
+        gup_string_contains_cstr(test_file_1_contents,
+            ".bg-\\#dd0000 {"             "\n"
+            "  background-color: #dd0000;""\n"
+            "}"                           "\n"
+        )
+    );
+
+    gup_assert(
+        gup_string_contains_cstr(test_file_1_contents,
+            "/* Mobile */"                     "\n"
+            "@media (max-width: 768px) {"      "\n"
+            "  .mobile { display: inherit; }""\n"
+            "  .tablet { display: none; }"   "\n"
+            "  .computer { display: none; }" "\n"
+            "  .ultrawide { display: none; }""\n"
+            "  :root { font-size: 14px; }"   "\n"
+        )
+    );
+
+    gup_assert(
+        gup_string_contains_cstr(test_file_1_contents,
+            "  .m\\:w-75\\% {""\n"
+            "    width: 75%;" "\n"
+            "  }"             "\n"
+        )
+    );
+
     gup_arena_destroy(&a);
     return 0;
 }
